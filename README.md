@@ -5,7 +5,8 @@ YouTube plugin for AIMP written in pure WinAPI and C++.
 Features
 ---
 - User videos and playlists (including private)
-- Custom urls (users, videos, playlists)
+- Can load YouTube URLs (videos, channels, playlists)
+- Can manage your YouTube playlists (add or remove videos)
 - Multi-language support
 - Exclusions
 - Automatically loads new items (playlists, users, all custom urls)
@@ -17,7 +18,7 @@ Features
 
 Download
 ---
-[http://www.aimp.ru/forum/index.php?topic=0](http://www.aimp.ru/forum/index.php?topic=0)
+[http://www.aimp.ru/forum/index.php?topic=50071](http://www.aimp.ru/forum/index.php?topic=50071)
 
 Screenshots
 ---

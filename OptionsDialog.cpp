@@ -549,7 +549,7 @@ LRESULT CALLBACK OptionsDialog::LinkProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
             SendMessage(hWnd, WM_SETFONT, WPARAM(versionFont), TRUE);
         } break;
         case WM_USER: return mouseOver;
-        case WM_LBUTTONUP: ShellExecute(hWnd, L"open", L"http://www.aimp.ru/forum/index.php?topic=49938", NULL, NULL, SW_SHOWNORMAL); break;
+        case WM_LBUTTONUP: ShellExecute(hWnd, L"open", L"http://www.aimp.ru/forum/index.php?topic=50071", NULL, NULL, SW_SHOWNORMAL); break;
         case WM_MOUSELEAVE:
             mouseOver = false; 
             InvalidateRect(hWnd, NULL, FALSE);
