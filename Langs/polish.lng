@@ -1,0 +1,38 @@
+﻿[FILE]
+Author=Eddy
+Name=Polish (PL)
+VersionID=0
+LangId=1045
+
+[YouTube]
+ConnectStatusOK=Autoryzacja pomyślna|Możesz teraz zamknąć to okno i wrócić do AIMPa.
+ConnectStatusError=Wystąpił błąd|Nie udało się połączyć z kontem YouTube. Wróć do AIMPa i spróbuj ponownie.
+YouTubeLang=pl
+
+[YouTube.Messages]
+Error=Błąd
+CantResolve=Nie udało się wczytać tego adresu.
+
+[YouTube.Menu]
+AddURL=YouTube URL
+OpenInBrowser=Otwórz w przeglądarce
+AddToExclusions=Dodaj do wyjątków
+AddTo=Dodaj do
+RemoveFrom=Usuń z
+
+[YouTube.AddURL]
+Title=Dodaj adres YouTube
+URL=Adres YouTube 
+CreateNew=Utwórz nową playlistę
+OK=OK
+PlaylistName=Nazwa playlisty (opcjonalnie)
+
+[YouTube.Options]
+Title=YouTube
+Account=Konto YouTube
+ConnectButton=Zaloguj się|Wyloguj się
+General=Ogólne
+MonitorURLs=Monitoruj dodane adresy
+MonitorUserPlaylists=Monitoruj playlisty użytkownika
+CheckAtStartup=Sprawdzaj czy są nowe utwory przy starcie AIMPa
+CheckEvery=Sprawdzaj nowe utwory co|godzin

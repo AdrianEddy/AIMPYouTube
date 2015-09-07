@@ -1,0 +1,38 @@
+﻿[FILE]
+Author=Долматов Алексей
+Name=Русский (RU)
+VersionID=0
+LangId=1049
+
+[YouTube]
+ConnectStatusOK=Авторизация пройдена|Теперь можно закрыть это окно браузера и вернуться к AIMP.
+ConnectStatusError=К сожалению, произошла ошибка|Не удалось подключиться к учетной записи YouTube. Пожалуйста, вернитесь на AIMP и попробуйте еще раз.
+YouTubeLang=ru
+
+[YouTube.Messages]
+Error=Ошибка
+CantResolve=Не удалось разрешить этот адрес.
+
+[YouTube.Menu]
+AddURL=YouTube URL
+OpenInBrowser=Открыть в веб-браузере
+AddToExclusions=Добавить в список исключений
+AddTo=Добавить в
+RemoveFrom=Удалить из
+
+[YouTube.AddURL]
+Title=Добавить YouTube URL
+URL=YouTube URL
+CreateNew=Создать новый плейлист
+OK=OK
+PlaylistName=Название плейлиста (опционально)
+
+[YouTube.Options]
+Title=YouTube
+Account=YouTube аккаунт
+ConnectButton=авторизоваться|выйти
+General=Главное
+MonitorURLs=Мониторинг добавленных URL-адресов
+MonitorUserPlaylists=Мониторинг пользователей плейлисты
+CheckAtStartup=Проверка новых треков при запуске AIMP
+CheckEvery=Проверка новых треков| - период в часах

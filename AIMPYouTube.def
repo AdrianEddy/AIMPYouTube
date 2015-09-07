@@ -1,0 +1,4 @@
+LIBRARY "aimp_YouTube"
+
+EXPORTS
+    AIMPPluginGetHeader
