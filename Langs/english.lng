@@ -36,3 +36,9 @@ MonitorURLs=Monitor added URLs
 MonitorUserPlaylists=Monitor user's playlists
 CheckAtStartup=Check for new tracks on AIMP startup
 CheckEvery=Check for new tracks every|hours
+
+[YouTube.Playlists]
+Favorites=Favorites
+Uploads=Uploads
+Likes=Likes
+WatchLater=Watch later

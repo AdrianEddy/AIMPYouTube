@@ -22,11 +22,24 @@ void WINAPI MessageHook::CoreMessage(DWORD AMessage, int AParam1, void *AParam2,
             std::wstring id = Tools::TrackIdFromUrl(url->GetData());
             url->Release();
             if (!id.empty()) {
-                // TODO
-/*                if (Config::Likes.find(id) != Config::Likes.end()) {
-                    YouTubeAPI::UnlikeSong(id);
-                    Config::Likes.erase(id);
-                }*/
+                for (auto &x : Config::UserPlaylists) {
+                    for (auto &xx : x.Items) {
+                        if (xx == id) {
+                            x.Items.erase(id);
+
+                            if (IAIMPPlaylist *playlist = Plugin::instance()->GetPlaylistById(x.AIMPPlaylistId)) {
+                                Plugin::instance()->ForEveryItem(playlist, [&id](IAIMPPlaylistItem *, IAIMPFileInfo *, const std::wstring &itemid) {
+                                    if (!itemid.empty() && itemid == id) {
+                                        return Plugin::FLAG_DELETE_ITEM | Plugin::FLAG_STOP_LOOP;
+                                    }
+                                    return 0;
+                                });
+                                playlist->Release();
+                            }
+                            break;
+                        }
+                    }
+                }
                 Config::TrackExclusions.insert(id);
                 Config::SaveExtendedConfig();
                 IAIMPPlaylist *parent = nullptr;
@@ -54,8 +67,12 @@ void WINAPI MessageHook::CoreMessage(DWORD AMessage, int AParam1, void *AParam2,
             url->Release();
             currentTrack->Release();
             if (!id.empty()) {
-                // TODO: add to favorites
-                //YouTubeAPI::LikeSong(id);
+                for (auto &x : Config::UserPlaylists) {
+                    if (x.ReferenceName == std::wstring(L"Favorites")) {
+                        YouTubeAPI::AddToPlaylist(x, id);
+                        break;
+                    }
+                }
                 return;
             }
         }

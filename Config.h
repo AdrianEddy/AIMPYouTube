@@ -61,6 +61,7 @@ public:
         std::wstring ID;
         std::wstring Title;
         std::wstring ChannelName;
+        std::wstring ReferenceName;
         std::unordered_set<std::wstring> Items;
         bool CanModify;
         std::wstring AIMPPlaylistId;
@@ -68,8 +69,8 @@ public:
         typedef rapidjson::PrettyWriter<rapidjson::FileWriteStream, rapidjson::UTF16<>> Writer;
         typedef rapidjson::GenericValue<rapidjson::UTF16<>> Value;
 
-        Playlist(const std::wstring &id, const std::wstring &title, bool canModify, const std::wstring &channelName = std::wstring())
-            : ID(id), Title(title), CanModify(canModify), ChannelName(channelName) {
+        Playlist(const std::wstring &id, const std::wstring &title, bool canModify, const std::wstring &refName = std::wstring(), const std::wstring &channelName = std::wstring())
+            : ID(id), Title(title), CanModify(canModify), ReferenceName(refName), ChannelName(channelName) {
 
         }
 
@@ -78,6 +79,7 @@ public:
                 ID = v[L"ID"].GetString();
                 Title = v[L"Title"].GetString();
                 ChannelName = v[L"ChannelName"].GetString();
+                ReferenceName = v[L"ReferenceName"].GetString();
                 AIMPPlaylistId = v[L"AIMPPlaylistId"].GetString();
                 CanModify = v[L"CanModify"].GetBool();
                 Items.clear();
@@ -98,6 +100,9 @@ public:
 
             writer.String(L"ChannelName");
             writer.String(that.ChannelName.c_str(), that.ChannelName.size());
+
+            writer.String(L"ReferenceName");
+            writer.String(that.ReferenceName.c_str(), that.ReferenceName.size());
 
             writer.String(L"AIMPPlaylistId");
             writer.String(that.AIMPPlaylistId.c_str(), that.AIMPPlaylistId.size());

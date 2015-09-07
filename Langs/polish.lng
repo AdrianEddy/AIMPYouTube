@@ -36,3 +36,9 @@ MonitorURLs=Monitoruj dodane adresy
 MonitorUserPlaylists=Monitoruj playlisty użytkownika
 CheckAtStartup=Sprawdzaj czy są nowe utwory przy starcie AIMPa
 CheckEvery=Sprawdzaj nowe utwory co|godzin
+
+[YouTube.Playlists]
+Favorites=Ulubione
+Uploads=Przesłane
+Likes=Fajne filmy
+WatchLater=Obejrzyj później

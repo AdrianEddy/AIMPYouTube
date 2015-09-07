@@ -171,10 +171,10 @@ void OptionsDialog::LoadProfileInfo(std::function<void()> onFinished) {
         if (d.IsObject() && d.HasMember("items") && d["items"].IsArray() && d["items"].Size() > 0 && d["items"][0].HasMember("contentDetails")) {
             const rapidjson::Value &i = d["items"][0]["contentDetails"]["relatedPlaylists"];
 
-            m_userPlaylists.push_back({ Tools::ToWString(i["favorites"]), L"Favorites", true });
-            m_userPlaylists.push_back({ Tools::ToWString(i["uploads"]), L"Uploads", false });
-            m_userPlaylists.push_back({ Tools::ToWString(i["likes"]), L"Likes", true });
-            m_userPlaylists.push_back({ Tools::ToWString(i["watchLater"]), L"WatchLater", true });
+            m_userPlaylists.push_back({ Tools::ToWString(i["favorites"]), Plugin::instance()->Lang(L"YouTube.Playlists\\Favorites"), true, L"Favorites" });
+            m_userPlaylists.push_back({ Tools::ToWString(i["uploads"]), Plugin::instance()->Lang(L"YouTube.Playlists\\Uploads"), false, L"Uploads" });
+            m_userPlaylists.push_back({ Tools::ToWString(i["likes"]), Plugin::instance()->Lang(L"YouTube.Playlists\\Likes"), true, L"Likes" });
+            m_userPlaylists.push_back({ Tools::ToWString(i["watchLater"]), Plugin::instance()->Lang(L"YouTube.Playlists\\WatchLater"), true, L"WatchLater" });
 
             m_userYTName = Tools::ToWString(d["items"][0]["snippet"]["title"]);
         }
