@@ -19,6 +19,7 @@ OpenInBrowser=Открыть в веб-браузере
 AddToExclusions=Добавить в список исключений
 AddTo=Добавить в плейлист
 RemoveFrom=Удалить из плейлиста
+CheckForNewItems=Проверить новые видео
 
 [YouTube.AddURL]
 Title=Добавить YouTube URL

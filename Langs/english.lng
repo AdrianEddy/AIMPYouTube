@@ -19,6 +19,7 @@ OpenInBrowser=Open in web browser
 AddToExclusions=Add to exclusions
 AddTo=Add to
 RemoveFrom=Remove from
+CheckForNewItems=Check for new videos
 
 [YouTube.AddURL]
 Title=Add YouTube URL

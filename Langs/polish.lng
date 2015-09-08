@@ -19,6 +19,7 @@ OpenInBrowser=Otwórz w przeglądarce
 AddToExclusions=Dodaj do wyjątków
 AddTo=Dodaj do
 RemoveFrom=Usuń z
+CheckForNewItems=Sprawdź czy są nowe utwory
 
 [YouTube.AddURL]
 Title=Dodaj adres YouTube

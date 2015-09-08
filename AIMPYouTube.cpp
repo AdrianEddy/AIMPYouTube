@@ -86,6 +86,14 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
         delete contextMenu;
     }
 
+    if (AimpMenu *miscMenu = AimpMenu::Get(AIMP_MENUID_PLAYER_PLAYLIST_MISCELLANEOUS)) {
+        miscMenu->Add(Lang(L"YouTube.Menu\\CheckForNewItems"), [this](IAIMPMenuItem *) {
+            MonitorCallback();
+        }, IDB_ICON, enableIfValid)->Release();
+
+        delete miscMenu;
+    }
+
     if (FAILED(m_core->QueryInterface(IID_IAIMPServicePlaylistManager, reinterpret_cast<void **>(&m_playlistManager))))
         return E_FAIL;
 
