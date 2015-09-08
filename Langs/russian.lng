@@ -17,8 +17,8 @@ CantResolve=Не удалось разрешить этот адрес.
 AddURL=YouTube URL
 OpenInBrowser=Открыть в веб-браузере
 AddToExclusions=Добавить в список исключений
-AddTo=Добавить в
-RemoveFrom=Удалить из
+AddTo=Добавить в плейлист
+RemoveFrom=Удалить из плейлиста
 
 [YouTube.AddURL]
 Title=Добавить YouTube URL
@@ -33,9 +33,9 @@ Account=YouTube аккаунт
 ConnectButton=авторизоваться|выйти
 General=Главное
 MonitorURLs=Мониторинг добавленных URL-адресов
-MonitorUserPlaylists=Мониторинг пользователей плейлисты
+MonitorUserPlaylists=Мониторинг плейлистов пользователя
 CheckAtStartup=Проверка новых треков при запуске AIMP
-CheckEvery=Проверка новых треков| - период в часах
+CheckEvery=Проверка новых треков| (Период в часах)
 
 [YouTube.Playlists]
 Favorites=Избранное
