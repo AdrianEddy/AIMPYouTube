@@ -126,7 +126,9 @@ void YouTubeAPI::LoadFromUrl(std::wstring url, IAIMPPlaylist *playlist, LoadingS
     } else {
         reqUrl += L'&';
     }
-    reqUrl += L"key=" TEXT(APP_KEY) L"\r\nAuthorization: Bearer " + Plugin::instance()->getAccessToken();
+    reqUrl += L"key=" TEXT(APP_KEY);
+    if (Plugin::instance()->isConnected())
+        reqUrl += L"\r\nAuthorization: Bearer " + Plugin::instance()->getAccessToken();
 
     AimpHTTP::Get(reqUrl, [playlist, state, finishCallback, url](unsigned char *data, int size) {
         rapidjson::Document d;
@@ -487,6 +489,10 @@ void YouTubeAPI::LoadSignatureDecoder() {
 }
 
 void YouTubeAPI::AddToPlaylist(Config::Playlist &pl, const std::wstring &trackId) {
+    if (!Plugin::instance()->isConnected()) {
+        OptionsDialog::Connect([&pl, trackId] { AddToPlaylist(pl, trackId); });
+        return;
+    }
     std::string postData("{"
         "\"snippet\": {"
             "\"playlistId\": \"" + Tools::ToString(pl.ID) + "\","
@@ -507,6 +513,10 @@ void YouTubeAPI::AddToPlaylist(Config::Playlist &pl, const std::wstring &trackId
 }
 
 void YouTubeAPI::RemoveFromPlaylist(Config::Playlist &pl, const std::wstring &trackId) {
+    if (!Plugin::instance()->isConnected()) {
+        OptionsDialog::Connect([&pl, trackId] { RemoveFromPlaylist(pl, trackId); });
+        return;
+    }
     std::wstring headers(L"\r\nAuthorization: Bearer " + Plugin::instance()->getAccessToken());
 
     AimpHTTP::Get(L"https://content.googleapis.com/youtube/v3/playlistItems?part=id&videoId=" + trackId + L"&playlistId=" + pl.ID +

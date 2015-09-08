@@ -140,7 +140,28 @@ void Plugin::MonitorCallback() {
         for (const auto &x : Config::MonitorUrls) {
             m_instance->m_monitorPendingUrls.push(x);
         }
-    } 
+        if (m_instance->isConnected()) {
+            std::wstring auth = L"\r\nAuthorization: Bearer " + m_instance->m_accessToken;
+
+            // Load user playlists
+            AimpHTTP::Get(L"https://www.googleapis.com/youtube/v3/playlists?part=snippet&maxResults=50&mine=true&fields=items(id%2Csnippet)" + auth, [](unsigned char *data, int size) {
+                rapidjson::Document d;
+                d.Parse(reinterpret_cast<const char *>(data));
+
+                if (d.IsObject() && d.HasMember("items") && d["items"].IsArray() && d["items"].Size() > 0) {
+                    for (auto x = d["items"].Begin(), e = d["items"].End(); x != e; x++) {
+                        const rapidjson::Value &item = *x;
+                        std::wstring id(Tools::ToWString(item["id"]));
+                        auto find = [&](const Config::Playlist &p) -> bool { return p.ID == id; };
+                        if (std::find_if(Config::UserPlaylists.begin(), Config::UserPlaylists.end(), find) == Config::UserPlaylists.end()) {
+                            Config::UserPlaylists.push_back({ id, Tools::ToWString(item["snippet"]["localized"]["title"]), true });
+                        }
+                    }
+                }
+                m_instance->UpdatePlaylistMenu();
+            });
+        }
+    }
     if (!m_instance->m_monitorPendingUrls.empty()) {
         const Config::MonitorUrl &url = m_instance->m_monitorPendingUrls.front();
         IAIMPPlaylist *pl = m_instance->GetPlaylistById(url.PlaylistID, false);
@@ -445,8 +466,8 @@ void Plugin::UpdatePlaylistMenu() {
         }
         delete contextMenu;
     }
-    // REMOVE ITEMS
 
+    // REMOVE ITEMS
     contextMenu = AimpMenu::Get(L"RemoveContextMenu");
     if (!contextMenu) {
         if (AimpMenu *itemContextMenu = AimpMenu::Get(AIMP_MENUID_PLAYER_PLAYLIST_CONTEXT_FUNCTIONS)) {
