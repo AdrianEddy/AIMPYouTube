@@ -67,14 +67,47 @@ void WINAPI OptionsDialog::DestroyFrame() {
 void WINAPI OptionsDialog::Notification(int ID) {
     switch (ID) {
         case AIMP_SERVICE_OPTIONSDIALOG_NOTIFICATION_LOCALIZATION: {
+            std::wstring checkEveryText0 = m_plugin->Lang(L"YouTube.Options\\CheckEvery", 0);
+            std::wstring checkEveryText1 = m_plugin->Lang(L"YouTube.Options\\CheckEvery", 1);
             SetDlgItemText(m_handle, IDC_MAINFRAME,       m_plugin->Lang(L"YouTube.Options\\Title").c_str());
             SetDlgItemText(m_handle, IDC_AUTHGROUPBOX,    m_plugin->Lang(L"YouTube.Options\\Account").c_str());
             SetDlgItemText(m_handle, IDC_MONITORGROUPBOX, m_plugin->Lang(L"YouTube.Options\\MonitorURLs").c_str());
             SetDlgItemText(m_handle, IDC_MONITORPLAYLISTS,m_plugin->Lang(L"YouTube.Options\\MonitorUserPlaylists").c_str());
             SetDlgItemText(m_handle, IDC_CHECKONSTARTUP,  m_plugin->Lang(L"YouTube.Options\\CheckAtStartup").c_str());
-            SetDlgItemText(m_handle, IDC_CHECKEVERY,      m_plugin->Lang(L"YouTube.Options\\CheckEvery", 0).c_str());
-            SetDlgItemText(m_handle, IDC_HOURS,           m_plugin->Lang(L"YouTube.Options\\CheckEvery", 1).c_str());
+            SetDlgItemText(m_handle, IDC_CHECKEVERY,      checkEveryText0.c_str());
+            SetDlgItemText(m_handle, IDC_HOURS,           checkEveryText1.c_str());
             SendDlgItemMessage(m_handle, IDC_CONNECTBTN, WM_UPDATELOCALE, 0, 0);
+
+            HDC hdc = GetDC(m_handle);
+
+            auto adjustRect = [&](const std::wstring &text, const std::wstring &text2, UINT cbId, UINT editId, UINT spinId, UINT suffixId) {
+                HWND control = GetDlgItem(m_handle, cbId);
+                SelectObject(hdc, (HFONT)SendMessage(control, WM_GETFONT, 0, 0));
+
+                SIZE textSize;
+                GetTextExtentPoint32(hdc, text.c_str(), text.size(), &textSize);
+                LPtoDP(hdc, (POINT *)&textSize, 2);
+                int offset = textSize.cx;
+
+                SetWindowPos(control, NULL, 0, 0, offset + 20, 13, SWP_NOZORDER | SWP_NOMOVE);
+
+                RECT rc;
+                control = GetDlgItem(m_handle, editId); GetWindowRect(control, &rc); MapWindowPoints(HWND_DESKTOP, m_handle, (LPPOINT)&rc, 2);
+                SetWindowPos(control, NULL, offset + 50, rc.top, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+
+                control = GetDlgItem(m_handle, spinId); GetWindowRect(control, &rc); MapWindowPoints(HWND_DESKTOP, m_handle, (LPPOINT)&rc, 2);
+                SetWindowPos(control, NULL, offset + 94, rc.top, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+
+                GetTextExtentPoint32(hdc, text2.c_str(), text2.size(), &textSize);
+                LPtoDP(hdc, (POINT *)&textSize, 2);
+
+                control = GetDlgItem(m_handle, suffixId); GetWindowRect(control, &rc); MapWindowPoints(HWND_DESKTOP, m_handle, (LPPOINT)&rc, 2);
+                SetWindowPos(control, NULL, offset + 115, rc.top, textSize.cx, 13, SWP_NOZORDER);
+            };
+
+            adjustRect(checkEveryText0, checkEveryText1, IDC_CHECKEVERY, IDC_CHECKEVERYVALUE, IDC_CHECKEVERYVALUESPIN, IDC_HOURS);
+
+            ReleaseDC(m_handle, hdc);
         } break;
         case AIMP_SERVICE_OPTIONSDIALOG_NOTIFICATION_LOAD: {
             m_userId    = Config::GetString(L"UserId");
