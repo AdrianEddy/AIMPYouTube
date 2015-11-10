@@ -1,0 +1,45 @@
+﻿[FILE]
+Author=EstFix
+Name=Eesti (EE)
+VersionID=0
+LangId=1061
+
+[YouTube]
+ConnectStatusOK=Autoriseerimine õnnestus|Võite nüüd sulgeda brauseri akna ja pöörduda tagasi AIMPi.
+ConnectStatusError=Vabandame, tekkis viga|Ei suutnud Youtubesse sisse logida. Palun pöörduge tagasi AIMPi ja proovige uuesti.
+YouTubeLang=ee
+
+[YouTube.Messages]
+Error=Viga
+CantResolve=Ei suutnud avada seda linki.
+
+[YouTube.Menu]
+AddURL=YouTube link
+OpenInBrowser=Ava brauseris
+AddToExclusions=Lisa eranditesse
+AddTo=Lisa
+RemoveFrom=Eemalda
+CheckForNewItems=Kontrolli uute videote olemasolu
+
+[YouTube.AddURL]
+Title=Lisa YouTube link
+URL=YouTube link
+CreateNew=Loo uus mänguloend
+OK=OK
+PlaylistName=Mänguloendi nimi (valikuline)
+
+[YouTube.Options]
+Title=YouTube
+Account=YouTube kasutaja
+ConnectButton=Ühenda|Katkesta
+General=Üldine
+MonitorURLs=Jälgi lisatud linke
+MonitorUserPlaylists=Jägi kasutaja esitusloendit
+CheckAtStartup=Kontrolli uuemate lugude olemasolu AIMPi käivitamisel
+CheckEvery=Kontrolli uuemate lugude olemasolu iga|tunni järel
+
+[YouTube.Playlists]
+Favorites=Lemmikud
+Uploads=Üleslaadimised
+Likes=Laigid
+WatchLater=Vaata hiljem

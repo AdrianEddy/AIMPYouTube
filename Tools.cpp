@@ -98,6 +98,17 @@ std::wstring Tools::TrackIdFromUrl(const std::wstring &url) {
             id.resize(pos);
 
         return id;
+    } else if (url.find(L"youtu.be") != std::wstring::npos) {
+        if ((pos = url.find(L"/", 8)) != std::wstring::npos) {
+            id = url.c_str() + pos + 1;
+            if ((pos = id.find(L'?')) != std::wstring::npos)
+                id.resize(pos);
+
+            if ((pos = id.find(L'&')) != std::wstring::npos)
+                id.resize(pos);
+
+            return id;
+        }
     } else if (url.find(L"localhost") != std::wstring::npos) {
         if ((pos = url.find(L"/", 8)) != std::wstring::npos) {
             return url.c_str() + pos + 1;
