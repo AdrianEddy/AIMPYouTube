@@ -85,7 +85,7 @@ public:
     void UpdatePlaylistMenu();
 
 private:
-    Plugin() : m_playlistManager(nullptr), m_messageDispatcher(nullptr), m_muiService(nullptr), m_monitorTimer(0), m_gdiplusToken(0), m_core(nullptr) {
+    Plugin() : m_messageHook(nullptr), m_playlistManager(nullptr), m_messageDispatcher(nullptr), m_muiService(nullptr), m_monitorTimer(0), m_gdiplusToken(0), m_core(nullptr) {
         AddRef();
     }
     Plugin(const Plugin &);

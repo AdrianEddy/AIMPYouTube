@@ -29,12 +29,14 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
     m_core = Core;
     AIMPString::Init(Core);
 
-    if (FAILED(m_core->QueryInterface(IID_IAIMPServiceMUI, reinterpret_cast<void **>(&m_muiService))))
+    if (FAILED(m_core->QueryInterface(IID_IAIMPServiceMUI, reinterpret_cast<void **>(&m_muiService)))) {
+        Finalize();
         return E_FAIL;
+    }
 
-      if (!Config::Init(Core)) return E_FAIL;
-    if (!AimpHTTP::Init(Core)) return E_FAIL;
-    if (!AimpMenu::Init(Core)) return E_FAIL;
+      if (!Config::Init(Core)) { Finalize(); return E_FAIL; }
+    if (!AimpHTTP::Init(Core)) { Finalize(); return E_FAIL; }
+    if (!AimpMenu::Init(Core)) { Finalize(); return E_FAIL; }
 
     Config::LoadExtendedConfig();
 
@@ -94,26 +96,37 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
         delete miscMenu;
     }
 
-    if (FAILED(m_core->QueryInterface(IID_IAIMPServicePlaylistManager, reinterpret_cast<void **>(&m_playlistManager))))
+    if (FAILED(m_core->QueryInterface(IID_IAIMPServicePlaylistManager, reinterpret_cast<void **>(&m_playlistManager)))) {
+        Finalize();
         return E_FAIL;
+    }
 
-    if (FAILED(m_core->QueryInterface(IID_IAIMPServiceMessageDispatcher, reinterpret_cast<void **>(&m_messageDispatcher))))
+    if (FAILED(m_core->QueryInterface(IID_IAIMPServiceMessageDispatcher, reinterpret_cast<void **>(&m_messageDispatcher)))) {
+        Finalize();
         return E_FAIL;
+    }
 
     m_messageHook = new MessageHook(this);
     if (FAILED(m_messageDispatcher->Hook(m_messageHook))) {
         delete m_messageHook;
+        Finalize();
         return E_FAIL;
     }
 
-    if (FAILED(m_core->RegisterExtension(IID_IAIMPServiceOptionsDialog, static_cast<OptionsDialog::Base *>(new OptionsDialog(this)))))
+    if (FAILED(m_core->RegisterExtension(IID_IAIMPServiceOptionsDialog, static_cast<OptionsDialog::Base *>(new OptionsDialog(this))))) {
+        Finalize();
         return E_FAIL;
-    
-    if (FAILED(m_core->RegisterExtension(IID_IAIMPServicePlaylistManager, new PlaylistListener())))
+    }
+ 
+    if (FAILED(m_core->RegisterExtension(IID_IAIMPServicePlaylistManager, new PlaylistListener()))) {
+        Finalize();
         return E_FAIL;
+    }
 
-    if (FAILED(m_core->RegisterExtension(IID_IAIMPServicePlayer, new PlayerHook())))
+    if (FAILED(m_core->RegisterExtension(IID_IAIMPServicePlayer, new PlayerHook()))) {
+        Finalize();
         return E_FAIL;
+    }
 
     if (Config::GetInt32(L"CheckOnStartup", 1)) {
         Timer::SingleShot(2000, MonitorCallback);
@@ -196,10 +209,15 @@ void Plugin::MonitorCallback() {
 
 HRESULT WINAPI Plugin::Finalize() {
     Timer::StopAll();
-    m_messageDispatcher->Unhook(m_messageHook);
-    m_messageDispatcher->Release();
-    m_muiService->Release();
-    m_playlistManager->Release();
+    if (m_messageDispatcher) {
+        m_messageDispatcher->Unhook(m_messageHook);
+        m_messageDispatcher->Release();
+    }
+    if (m_muiService)
+        m_muiService->Release();
+
+    if (m_playlistManager)
+        m_playlistManager->Release();
 
     AimpMenu::Deinit();
     AimpHTTP::Deinit();
