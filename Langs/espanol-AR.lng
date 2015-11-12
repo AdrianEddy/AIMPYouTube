@@ -1,0 +1,45 @@
+﻿[FILE]
+Author=KNTRO
+Name=Español (Argentina) [es-AR]
+VersionID=0
+LangId=11274
+
+[YouTube]
+ConnectStatusOK=Autorización aceptada|Ahora podés cerrar esta ventana del navegador y volver a AIMP.
+ConnectStatusError=Lo sentimos, pero ocurrió un error|No se pudo conectar a la cuenta de YouTube. Por favor, volvé a AIMP e intentá nuevamente.
+YouTubeLang=es-419
+
+[YouTube.Messages]
+Error=Error
+CantResolve=No se pudo resolver esta dirección web.
+
+[YouTube.Menu]
+AddURL=Dirección web de YouTube
+OpenInBrowser=Abrir en el navegador
+AddToExclusions=Agregar a exclusiones
+AddTo=Agregar a
+RemoveFrom=Quitar de
+CheckForNewItems=Buscar nuevos videos
+
+[YouTube.AddURL]
+Title=Agregar dirección web de YouTube
+URL=Dirección web de YouTube
+CreateNew=Crear nueva lista de reproducción
+OK=Aceptar
+PlaylistName=Nombre de la lista de reproducción (opcional)
+
+[YouTube.Options]
+Title=YouTube
+Account=Cuenta de YouTube
+ConnectButton=Conectar|Desconectar
+General=General
+MonitorURLs=Monitorear direcciones web agregadas
+MonitorUserPlaylists=Monitorear listas de reproducción del usuario
+CheckAtStartup=Buscar nuevos temas al iniciar AIMP
+CheckEvery=Buscar nuevos temas cada|horas
+
+[YouTube.Playlists]
+Favorites=Favoritos
+Uploads=Videos subidos
+Likes=Videos que me gustaron
+WatchLater=Ver más tarde
