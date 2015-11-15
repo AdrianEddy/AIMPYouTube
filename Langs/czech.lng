@@ -1,0 +1,45 @@
+[FILE]
+Author=R3gi
+Name=Czech (CS)
+VersionID=0
+LangId=1029
+
+[YouTube]
+ConnectStatusOK=Přístup povolen|Nyní můžete zavřít toto okno prohlížeče a přejít zpět do přehrávače AIMP.
+ConnectStatusError=Omlouváme se, došlo k chybě|Nelze navázat spojení s účtem služby YouTube. Přejděte zpět do přehrávače AIMP a zkuste to znovu.
+YouTubeLang=en
+
+[YouTube.Messages]
+Error=Chyba
+CantResolve=URL adresu nelze rozpoznat.
+
+[YouTube.Menu]
+AddURL=YouTube URL adresa
+OpenInBrowser=Otevřít ve webovém prohlížeči
+AddToExclusions=Přidat do výjimek
+AddTo=Přidat do
+RemoveFrom=Odebrat z
+CheckForNewItems=Vyhledat nová videa
+
+[YouTube.AddURL]
+Title=Přidat YouTube URL adresu
+URL=YouTube URL adresa
+CreateNew=Vytvořit nový playlist
+OK=OK
+PlaylistName=Název playlistu (volitelný)
+
+[YouTube.Options]
+Title=YouTube
+Account=YouTube účet
+ConnectButton=Připojit|Odpojit
+General=Obecné
+MonitorURLs=Hlídat přidané URL adresy
+MonitorUserPlaylists=Hlídat uživatelovy playlisty
+CheckAtStartup=Kontrolovat nové skladby při spuštění přehrávače AIMP
+CheckEvery=Kontrolovat nové skladby každých|hodin
+
+[YouTube.Playlists]
+Favorites=Oblíbené
+Uploads=Nahrané
+Likes=Líbilo se
+WatchLater=Přehrát později
