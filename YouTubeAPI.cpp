@@ -432,6 +432,8 @@ std::wstring YouTubeAPI::GetStreamUrl(const std::wstring &id) {
 }
 
 void YouTubeAPI::LoadSignatureDecoder() {
+    // TODO: http://en.cppreference.com/w/cpp/regex/regex_match
+
     std::wstring ua(L"Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36");
     AimpHTTP::Get(L"https://www.youtube.com/\r\nUser-Agent: " + ua, [](unsigned char *data, int size) {
         if (char *playerurl = strstr((char *)data, "\"js\":\"")) {
@@ -470,7 +472,8 @@ void YouTubeAPI::LoadSignatureDecoder() {
                                 funcdef += sigLen;
 
                                 std::map<std::string, std::function<void(std::string &s, int param)>> mutators;
-                                Tools::SplitString(start, "},", [&](const std::string &token) {
+                                Tools::SplitString(start, "},", [&](std::string token) {
+                                    token = Tools::Trim(token);
                                     std::string name(token.substr(0, 2));
                                     if (token.find("var ") != std::string::npos)
                                         mutators[name] = [](std::string &s, int param) { std::swap(s[0], s[param]); };
@@ -482,7 +485,8 @@ void YouTubeAPI::LoadSignatureDecoder() {
                                         mutators[name] = [](std::string &s, int param) { std::reverse(s.begin(), s.end()); };
                                 });
 
-                                Tools::SplitString(funcdef, ";", [&](const std::string &token) {
+                                Tools::SplitString(funcdef, ";", [&](std::string token) {
+                                    token = Tools::Trim(token);
                                     if (token.find("split") != std::string::npos || token.find("join") != std::string::npos)
                                         return;
                                     std::string mutator(token.substr(3, 2));

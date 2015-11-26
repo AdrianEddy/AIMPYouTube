@@ -16,6 +16,7 @@ struct Tools {
 
     static void ReplaceString(const std::string &search, const std::string &replace, std::string &subject);
     static void SplitString(const std::string &string, const std::string &delimiter, std::function<void(const std::string &token)> callback);
+    static  std::string Trim(const std::string &s);
 
     static std::wstring TrackIdFromUrl(const std::wstring &);
 
