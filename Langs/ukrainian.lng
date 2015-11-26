@@ -1,0 +1,45 @@
+[FILE]
+Author=Олександр (6c6c6) [http://localize.org.ua/]
+Name=Ukrainian (UK)
+VersionID=0
+LangId=1058
+
+[YouTube]
+ConnectStatusOK=Дозвіл надано|Тепер Ви можете закрити це вікно браузера та повернутись до AIMP.
+ConnectStatusError=На жаль, відбулась помилка|Неможливо під’єднатись до облікового запису YouTube. Будь ласка, поверніться до AIMP та спробуйте ще.
+YouTubeLang=uk
+
+[YouTube.Messages]
+Error=Помилка
+CantResolve=Неможливо обробити це посилання.
+
+[YouTube.Menu]
+AddURL=YouTube-посилання
+OpenInBrowser=Відкрити в браузері
+AddToExclusions=Додати до винятків
+AddTo=Додати до
+RemoveFrom=Вилучити з
+CheckForNewItems=Перевірити нові відео
+
+[YouTube.AddURL]
+Title=Додати YouTube-посилання
+URL=YouTube-посилання
+CreateNew=Створити новий список
+OK=Гаразд
+PlaylistName=Назва списку (додатково)
+
+[YouTube.Options]
+Title=YouTube
+Account=Обліковий запис YouTube
+ConnectButton=З’єднатись|Від’єднатись
+General=Залаьне
+MonitorURLs=Моніторинг доданих посилань
+MonitorUserPlaylists=Моніторинг списиків відтворення користувача
+CheckAtStartup=Перевіряти наявність нових треків при запуску AIMP
+CheckEvery=Перевіряти наявність нових треків кожні|годин
+
+[YouTube.Playlists]
+Favorites=Улюблене
+Uploads=Вивантаження
+Likes=Вподобане
+WatchLater=Переглянути пізніше
