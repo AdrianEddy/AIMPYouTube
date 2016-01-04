@@ -445,34 +445,41 @@ void YouTubeAPI::LoadSignatureDecoder() {
             if (player.find("http") == std::string::npos)
                 player = "http:" + player;
 
-            AimpHTTP::Get(Tools::ToWString(player), [](unsigned char *data, int size) {
-                if (char *funcname = strstr((char *)data, ".set(\"signature\",")) {
+            AimpHTTP::Get(Tools::ToWString(player), [](unsigned char *rawData, int size) {
+                std::string data(reinterpret_cast<char *>(rawData), size);
+                Tools::ReplaceString("\n", "", data);
+                Tools::ReplaceString("\r", "", data);
+
+                std::size_t funcname;
+                if ((funcname = data.find(".set(\"signature\",")) != std::string::npos) {
                     funcname += 17;
-                    if (char *end = strchr(funcname, '(')) {
-                        std::string funcsig = "function " + std::string(funcname, end - funcname);
-                        std::string funcsig2 = std::string(funcname, end - funcname) + "=function";
+                    std::size_t end;
+                    if ((end = data.find('(', funcname)) != std::string::npos) {
+                        std::string fname(data.substr(funcname, end - funcname));
+                        std::string funcsig = "function " + fname;
+                        std::string funcsig2 = fname + "=function";
                         int sigLen = 0;
-                        char *funcdef = strstr((char *)data, funcsig.c_str());
-                        if (funcdef) {
+                        std::size_t funcdef = data.find(funcsig);
+                        if (funcdef != std::string::npos) {
                             sigLen = funcsig.size() + 4;
                         } else {
-                            funcdef = strstr((char *)data, funcsig2.c_str());
+                            funcdef = data.find(funcsig2);
                             sigLen = funcsig2.size() + 4;
                         }
-                        if (funcdef) {
-                            char *mutatorObject = strstr(funcdef, "split(\"\");") + 10;
-                            std::string mutatorObjectS(mutatorObject, strstr(mutatorObject, ".") - mutatorObject);
-                            mutatorObjectS = "var " + mutatorObjectS;
-
-                            char *start = nullptr;
-                            if (start = strstr((char *)data, mutatorObjectS.c_str())) {
-                                start += mutatorObjectS.length() + 2;
-                                if (char *defend = strstr(start, "};")) *defend = 0;
-                                if (char *end = strstr(funcdef, "};")) *end = 0;
+                        if (funcdef != std::string::npos) {
+                            size_t mutatorObject = data.find("split(\"\");", funcdef) + 10;
+                            std::string mutatorObjectName(data.substr(mutatorObject, data.find('.', mutatorObject) - mutatorObject));
+                            mutatorObjectName = "var " + mutatorObjectName;
+                            
+                            size_t mutatorObjectStart;
+                            if ((mutatorObjectStart = data.find(mutatorObjectName)) != std::string::npos) {
+                                mutatorObjectStart += mutatorObjectName.length() + 2;
+                                size_t mutatorObjectEnd = data.find("};", mutatorObjectStart);
+                                end = data.find("join(\"\")", funcdef);
                                 funcdef += sigLen;
 
                                 std::map<std::string, std::function<void(std::string &s, int param)>> mutators;
-                                Tools::SplitString(start, "},", [&](std::string token) {
+                                Tools::SplitString(data.substr(mutatorObjectStart, mutatorObjectEnd - mutatorObjectStart), "},", [&](std::string token) {
                                     token = Tools::Trim(token);
                                     std::string name(token.substr(0, 2));
                                     if (token.find("var ") != std::string::npos)
@@ -485,10 +492,11 @@ void YouTubeAPI::LoadSignatureDecoder() {
                                         mutators[name] = [](std::string &s, int param) { std::reverse(s.begin(), s.end()); };
                                 });
 
-                                Tools::SplitString(funcdef, ";", [&](std::string token) {
+                                Tools::SplitString(data.substr(funcdef, end - funcdef), ";", [&](std::string token) {
                                     token = Tools::Trim(token);
-                                    if (token.find("split") != std::string::npos || token.find("join") != std::string::npos)
+                                    if (token.find("split") != std::string::npos || token.find("return") != std::string::npos)
                                         return;
+
                                     std::string mutator(token.substr(3, 2));
                                     if (char *params = strchr((char *)token.c_str(), ',')) {
                                         if (char *end = strchr(params, ')')) *end = 0;
