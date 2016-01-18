@@ -1,0 +1,45 @@
+﻿[FILE]
+Author=DanyeleX
+Name=Italian (IT)
+VersionID=0
+LangId=1040
+
+[YouTube]
+ConnectStatusOK=Autorizzazione avvenuta|Puoi chiudere la finestra del browser e tornare ad AIMP.
+ConnectStatusError=Spiacente, errore riscontrato|Non è possibile connettersi all'account Youtube. Chiudi e ritorna ad AIMP per riprovare.
+YouTubeLang=it
+
+[YouTube.Messages]
+Error=Errore
+CantResolve=Non riesco a risolvere l'URL.
+
+[YouTube.Menu]
+AddURL=YouTube URL
+OpenInBrowser=Apri nel browser
+AddToExclusions=Aggiungi alle esclusioni
+AddTo=Aggiungi a
+RemoveFrom=Rimuovi da
+CheckForNewItems=Controlla presenza nuovi video
+
+[YouTube.AddURL]
+Title=Aggiungi URL YouTube
+URL=YouTube URL
+CreateNew=Crea nuova playlist
+OK=OK
+PlaylistName=Nome Playlist (opzionale)
+
+[YouTube.Options]
+Title=YouTube
+Account=YouTube account
+ConnectButton=Connetti|Disconnetti
+General=Generale
+MonitorURLs=Monitor URL aggiunti
+MonitorUserPlaylists=Monitor playlist utente
+CheckAtStartup=Controlla nuove tracce all'avvio di AIMP
+CheckEvery=Controlla nuove tracce ogni|ore
+
+[YouTube.Playlists]
+Favorites=Favoriti
+Uploads=Uploads
+Likes=Likes
+WatchLater=Guarda dopo
