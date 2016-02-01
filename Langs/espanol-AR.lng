@@ -15,7 +15,7 @@ CantResolve=No se pudo resolver esta dirección web.
 
 [YouTube.Menu]
 AddURL=Dirección web de YouTube
-OpenInBrowser=Abrir en el navegador
+OpenInBrowser=Abrir en el navegador web
 AddToExclusions=Agregar a exclusiones
 AddTo=Agregar a
 RemoveFrom=Quitar de

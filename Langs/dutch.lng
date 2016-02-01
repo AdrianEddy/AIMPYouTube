@@ -1,0 +1,48 @@
+﻿[FILE]
+Author=Peter Mulder (peter.mulder.1981@gmail.com)
+Help=
+Icon=
+LangId=1043
+Name=Nederlands (NL)
+VersionID=0
+
+[YouTube]
+ConnectStatusError=Sorry, er is een fout opgetreden|Kon geen verbinding maken met YouTube-account. Keer a.u.b. terug naar AIMP en probeer het opnieuw.
+ConnectStatusOK=Authorisatie gelukt|Je kunt nu dit browservenster sluiten en terugkeren naar AIMP.
+YouTubeLang=en
+
+[YouTube.AddURL]
+CreateNew=Nieuwe afspeellijst maken
+OK=Oke
+PlaylistName=Naam afspeellijst (optioneel)
+Title=YouTube-URL toevoegen
+URL=YouTube-URL
+
+[YouTube.Menu]
+AddTo=Toevoegen aan
+AddToExclusions=Toevoegen aan uitzonderingen
+AddURL=YouTube-URL
+CheckForNewItems=Op nieuwe video's controleren
+OpenInBrowser=In webbrowser openen
+RemoveFrom=Verwijderen van
+
+[YouTube.Messages]
+CantResolve=Kon deze URL niet oplossen.
+Error=Fout
+
+[YouTube.Options]
+Account=YouTube-account
+CheckAtStartup=Bij opstarten van AIMP op nieuwe nummers controleren
+CheckEvery=Op nieuwe nummers controleren elke|uur
+ConnectButton=Verbinden|Loskoppelen
+General=Algemeen
+MonitorURLs=Toegevoegde URL's controleren
+MonitorUserPlaylists=Afspeellijst van gebruiker controleren
+Title=YouTube
+
+[YouTube.Playlists]
+Favorites=Favorieten
+Likes=Likes
+Uploads=Uploads
+WatchLater=Later bekijken
+
