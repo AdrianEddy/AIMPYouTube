@@ -1,0 +1,45 @@
+﻿[FILE]
+Author=Zilvinas Mazeika
+Name=Lithuanian (LT)
+VersionID=0
+LangId=10332
+
+[YouTube]
+ConnectStatusOK=Authorizacija sėkminga|Galima uždaryti naršyklės langą ir grįžti į AIMP.
+ConnectStatusError=Atsiprašome, įvyko klaida|Nepavyksta prisijungti prie YouTube paskyros. Prašome grįžti į AIMP ir mėginti dar kartą.
+YouTubeLang=lt
+
+[YouTube.Messages]
+Error=Klaida
+CantResolve=Nepavyko prisijungti prie serverio.
+
+[YouTube.Menu]
+AddURL=YouTube URL
+OpenInBrowser=Atidarytu naršyklėje
+AddToExclusions=Taikyti išiimtį
+AddTo=Pridėti į
+RemoveFrom=Pašalinti iš
+CheckForNewItems=Patikrinti naujus vaizdo įrašus
+
+[YouTube.AddURL]
+Title=Pridėti YouTube URL
+URL=YouTube URL
+CreateNew=Sukurti naują grojaraštį
+OK=Gerai
+PlaylistName=Grojaraščio pavadinimas (pasirinktinai)
+
+[YouTube.Options]
+Title=YouTube
+Account=YouTube paskyra
+ConnectButton=Prisijungti|Atsijungti
+General=Bendra
+MonitorURLs=Rodyti pridėtus URLs
+MonitorUserPlaylists=Rodyti vartotojo grojaraščius
+CheckAtStartup=Patikrinti naujus įrašys paleidžiant AIMP
+CheckEvery=Patikrinti naujus įrašus kas|valandas
+
+[YouTube.Playlists]
+Favorites=Mėgstamiausi
+Uploads=Įkėlimai
+Likes=Patikimai
+WatchLater=Žiūrėti vėliau
