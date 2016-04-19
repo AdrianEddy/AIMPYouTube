@@ -15,7 +15,7 @@ CantResolve=Ei suutnud avada seda linki.
 
 [YouTube.Menu]
 AddURL=YouTube link
-OpenInBrowser=Ava brauseris
+OpenInBrowser=Ava veebilehitsejas
 AddToExclusions=Lisa eranditesse
 AddTo=Lisa
 RemoveFrom=Eemalda
@@ -41,5 +41,5 @@ CheckEvery=Kontrolli uuemate lugude olemasolu iga|tunni järel
 [YouTube.Playlists]
 Favorites=Lemmikud
 Uploads=Üleslaadimised
-Likes=Laigid
+Likes=Meeldimised
 WatchLater=Vaata hiljem
