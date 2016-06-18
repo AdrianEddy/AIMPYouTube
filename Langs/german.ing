@@ -1,0 +1,45 @@
+﻿[FILE]
+Author=samplb
+Name=Deutsch (DE)
+VersionID=0
+LangId=1031
+
+[YouTube]
+ConnectStatusOK=Die Verbindung ist hergestellt| Fahren Sie nun in AIMP fort
+ConnectStatusError=Ein Fehler ist aufgetreten|AIMP konnte sich nicht mit Youtube verbinden. Bitte versuchen Sie es erneut.
+YouTubeLang=de
+
+[YouTube.Messages]
+Error=Fehler.
+CantResolve=Diese URL wurde nicht erkannt.
+
+[YouTube.Menu]
+AddURL=YouTube URL
+OpenInBrowser=Im Internet-Browser öffnen.
+AddToExclusions=zu Ausnahmen hinzufügen
+AddTo=hinzufügen zu:
+RemoveFrom=entfernen von:
+CheckForNewItems=Auf neue Videos prüfen
+
+[YouTube.AddURL]
+Title=Youtube-URL hinzufügen
+URL=YouTube URL
+CreateNew=Erstelle eine neue Playlist
+OK=OK
+PlaylistName=PlaylistName(optional)
+
+[YouTube.Options]
+Title=YouTube
+Account=YouTube account
+ConnectButton=Verbindung herstellen|Verbindung trennen
+General=Allgemeines
+MonitorURLs=Überwache die URLs
+MonitorUserPlaylists=Überwache die eigenen Playlists
+CheckAtStartup=Überprüfe auf neue Titel beim Programmstart
+CheckEvery=Prüfe auf neue Iitel jede|Stunde
+
+[YouTube.Playlists]
+Favorites=Favoriten
+Uploads=Uploads
+Likes=Likes
+WatchLater=Später ansehen.
