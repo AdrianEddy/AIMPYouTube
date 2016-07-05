@@ -788,7 +788,7 @@ void OptionsDialog::Connect(std::function<void()> onFinished) {
 
     ShellExecuteA(Plugin::instance()->GetMainWindowHandle(),
                   "open",
-                  "https://accounts.google.com/o/oauth2/auth?client_id=" CLIENT_ID "&redirect_uri=http%3A%2F%2Flocalhost%3A35910%2F&response_type=code&scope=https://www.googleapis.com/auth/youtube https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/userinfo.email",
+                  "https://accounts.google.com/o/oauth2/auth?client_id=" CLIENT_ID "&redirect_uri=http%3A%2F%2Flocalhost%3A35910%2F&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.readonly+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email",
                   NULL, NULL, SW_SHOWNORMAL);
 }
 
