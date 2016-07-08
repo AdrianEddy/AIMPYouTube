@@ -407,13 +407,39 @@ std::wstring YouTubeAPI::GetStreamUrl(const std::wstring &id) {
             rapidjson::Document d;
             d.Parse(map.c_str());
 
+            std::vector<int> streamPriority = {
+                // Audio first
+                140, // m4a 128kbps
+                141, // m4a 256kbps
+                256, // m4a
+                258, // m4a
+                // Video
+                22, // mp4 1280x720  (192kbps)
+                37, // mp4 1920x1080 (192kbps)
+                38, // mp4 4096x3072 (192kbps)
+                59, // mp4 854x480 (128kbps)
+                78, // mp4 854x480 (128kbps)
+                //18, // mp4 640x360 (96kbps)
+                135, // mp4 480p
+                134, // mp4 360p
+                136, // mp4 720p
+                137, // mp4 1080p
+                160, // mp4 144p
+                264, // mp4 1440p
+                266, // mp4 2160p
+                133 // mp4 240p
+            };
+
+            std::map<int, std::wstring> urls;
+
             if (d.IsArray()) {
                 for (auto x = d.Begin(), e = d.End(); x != e; x++) {
                     const rapidjson::Value &px = *x;
                     if (!px.IsObject())
                         continue;
 
-                    if (px.HasMember("quality") && strcmp(px["quality"].GetString(), "medium") == 0 && !px.HasMember("stereo3d") && strstr(px["type"].GetString(), "mp4") != nullptr) {
+                    if (px.HasMember("itag")) {
+                        int itag = std::stoi(px["itag"].GetString());
                         std::string stream = Tools::UrlDecode(px["url"].GetString());
                         if (px.HasMember("s")) {
                             std::string s = px["s"].GetString();
@@ -421,10 +447,20 @@ std::wstring YouTubeAPI::GetStreamUrl(const std::wstring &id) {
                             stream += "&signature=" + s;
                         }
 
-                        stream_url = Tools::ToWString(stream);
-                        return;
+                        urls[itag] = Tools::ToWString(stream);
                     }
                 }
+            }
+            for (auto x : streamPriority) {
+                if (urls.find(x) != urls.end()) {
+                    stream_url = urls[x];
+                    break;
+                }
+            }
+
+            // If none of preferred streams are available, get the first one
+            if (stream_url.empty() && urls.size() > 0) {
+                stream_url = urls.begin()->second;
             }
         }
     }, true);
@@ -469,17 +505,18 @@ void YouTubeAPI::LoadSignatureDecoder() {
                         if (funcdef != std::string::npos) {
                             size_t mutatorObject = data.find("split(\"\");", funcdef) + 10;
                             std::string mutatorObjectName(data.substr(mutatorObject, data.find('.', mutatorObject) - mutatorObject));
-                            mutatorObjectName = "var " + mutatorObjectName;
+                            mutatorObjectName = "var " + mutatorObjectName + "=";
                             
                             size_t mutatorObjectStart;
                             if ((mutatorObjectStart = data.find(mutatorObjectName)) != std::string::npos) {
-                                mutatorObjectStart += mutatorObjectName.length() + 2;
+                                mutatorObjectStart += mutatorObjectName.length() + 1;
                                 size_t mutatorObjectEnd = data.find("};", mutatorObjectStart);
                                 end = data.find("join(\"\")", funcdef);
                                 funcdef += sigLen;
 
                                 std::map<std::string, std::function<void(std::string &s, int param)>> mutators;
-                                Tools::SplitString(data.substr(mutatorObjectStart, mutatorObjectEnd - mutatorObjectStart), "},", [&](std::string token) {
+                                std::string mutStr = data.substr(mutatorObjectStart, mutatorObjectEnd - mutatorObjectStart);
+                                Tools::SplitString(mutStr, "},", [&](std::string token) {
                                     token = Tools::Trim(token);
                                     std::string name(token.substr(0, 2));
                                     if (token.find("var ") != std::string::npos)
@@ -501,7 +538,8 @@ void YouTubeAPI::LoadSignatureDecoder() {
                                     if (char *params = strchr((char *)token.c_str(), ',')) {
                                         if (char *end = strchr(params, ')')) *end = 0;
                                         int param = std::stoi(params + 1);
-                                        YouTubeAPI::SigDecoder.push_back({ mutators[mutator], param });
+                                        if (mutators.find(mutator) != mutators.end())
+                                            YouTubeAPI::SigDecoder.push_back({ mutators[mutator], param });
                                     }
                                 });
                             }
