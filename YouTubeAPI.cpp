@@ -419,11 +419,11 @@ std::wstring YouTubeAPI::GetStreamUrl(const std::wstring &id) {
                 38, // mp4 4096x3072 (192kbps)
                 59, // mp4 854x480 (128kbps)
                 78, // mp4 854x480 (128kbps)
-                //18, // mp4 640x360 (96kbps)
                 135, // mp4 480p
                 134, // mp4 360p
                 136, // mp4 720p
                 137, // mp4 1080p
+                18,  // mp4 640x360 (96kbps)
                 160, // mp4 144p
                 264, // mp4 1440p
                 266, // mp4 2160p
@@ -432,22 +432,29 @@ std::wstring YouTubeAPI::GetStreamUrl(const std::wstring &id) {
 
             std::map<int, std::wstring> urls;
 
+            std::wstring medium_stream;
+
             if (d.IsArray()) {
                 for (auto x = d.Begin(), e = d.End(); x != e; x++) {
                     const rapidjson::Value &px = *x;
                     if (!px.IsObject())
                         continue;
 
+                    std::string stream = Tools::UrlDecode(px["url"].GetString());
+                    if (px.HasMember("s")) {
+                        std::string s = px["s"].GetString();
+                        YouTubeAPI::DecodeSignature(s);
+                        stream += "&signature=" + s;
+                    }
+                    std::wstring wstream = Tools::ToWString(stream);
+
                     if (px.HasMember("itag")) {
                         int itag = std::stoi(px["itag"].GetString());
-                        std::string stream = Tools::UrlDecode(px["url"].GetString());
-                        if (px.HasMember("s")) {
-                            std::string s = px["s"].GetString();
-                            YouTubeAPI::DecodeSignature(s);
-                            stream += "&signature=" + s;
-                        }
+                        urls[itag] = wstream;
+                    }
 
-                        urls[itag] = Tools::ToWString(stream);
+                    if (px.HasMember("quality") && strcmp(px["quality"].GetString(), "medium") == 0 && !px.HasMember("stereo3d") && strstr(px["type"].GetString(), "mp4") != nullptr) {
+                        medium_stream = wstream;
                     }
                 }
             }
@@ -456,6 +463,10 @@ std::wstring YouTubeAPI::GetStreamUrl(const std::wstring &id) {
                     stream_url = urls[x];
                     break;
                 }
+            }
+
+            if (stream_url.empty() && !medium_stream.empty()) {
+                stream_url = medium_stream;
             }
 
             // If none of preferred streams are available, get the first one
