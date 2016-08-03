@@ -7,6 +7,7 @@
 #include <functional>
 #include <windows.h>
 #include "Config.h"
+#include <memory>
 
 class IAIMPPlaylist;
 class IAIMPPlaylistItem;
@@ -57,13 +58,13 @@ public:
     static void AddToPlaylist(Config::Playlist &, const std::wstring &trackId);
     static void RemoveFromPlaylist(Config::Playlist &, const std::wstring &trackId);
 
-    static void LoadFromUrl(std::wstring url, IAIMPPlaylist *playlist, LoadingState *state, std::function<void()> finishCallback = std::function<void()>());
+    static void LoadFromUrl(std::wstring url, IAIMPPlaylist *playlist, std::shared_ptr<LoadingState> state, std::function<void()> finishCallback = std::function<void()>());
     static void ResolveUrl(const std::wstring &url, const std::wstring &playlistTitle = std::wstring(), bool createPlaylist = true);
 
-    static void GetExistingTrackIds(IAIMPPlaylist *pl, LoadingState *state);
+    static void GetExistingTrackIds(IAIMPPlaylist *pl, std::shared_ptr<LoadingState> state);
 
 private:
-    static void AddFromJson(IAIMPPlaylist *, const rapidjson::Value &, LoadingState *state);
+    static void AddFromJson(IAIMPPlaylist *, const rapidjson::Value &, std::shared_ptr<LoadingState> state);
 
     YouTubeAPI();
     YouTubeAPI(const YouTubeAPI &);

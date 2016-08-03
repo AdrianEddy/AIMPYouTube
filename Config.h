@@ -2,6 +2,7 @@
 
 #include <string>
 #include <unordered_set>
+#include <unordered_map>
 #include <vector>
 #include "SDK/apiCore.h"
 #include <cstdint>
@@ -121,6 +122,50 @@ public:
             return writer;
         }
     };
+    struct TrackInfo {
+        std::wstring Id;
+        std::wstring Name;
+        std::wstring Permalink;
+        std::wstring Artwork;
+        double Duration;
+
+        typedef rapidjson::Writer<rapidjson::FileWriteStream, rapidjson::UTF16<>> Writer;
+        typedef rapidjson::GenericValue<rapidjson::UTF16<>> Value;
+
+        TrackInfo() : Duration(0) {}
+        TrackInfo(const std::wstring &name, const std::wstring &id, const std::wstring &permalink, const std::wstring &artwork, double duration)
+            : Name(name), Id(id), Permalink(permalink), Artwork(artwork), Duration(duration) {
+
+        }
+
+        TrackInfo(const Value &v) {
+            if (v.IsObject()) {
+                Name      = v[L"N"].GetString();
+                Permalink = v[L"P"].GetString();
+                Artwork   = v[L"A"].GetString();
+                Duration  = v[L"D"].GetDouble();
+            }
+        }
+
+        friend Writer &operator <<(Writer &writer, const TrackInfo &that) {
+            writer.StartObject();
+
+            writer.String(L"N");
+            writer.String(that.Name.c_str(), that.Name.size());
+
+            writer.String(L"P");
+            writer.String(that.Permalink.c_str(), that.Permalink.size());
+
+            writer.String(L"A");
+            writer.String(that.Artwork.c_str(), that.Artwork.size());
+
+            writer.String(L"D");
+            writer.Double(that.Duration);
+
+            writer.EndObject();
+            return writer;
+        }
+    };
 
     static bool Init(IAIMPCore *core);
     static void Deinit();
@@ -140,9 +185,14 @@ public:
     static void SaveExtendedConfig();
     static void LoadExtendedConfig();
 
+    static void SaveCache();
+    static void LoadCache();
+    static bool ResolveTrackInfo(const std::wstring &id);
+
     static std::unordered_set<std::wstring> TrackExclusions;
     static std::vector<MonitorUrl> MonitorUrls;
     static std::vector<Playlist> UserPlaylists;
+    static std::unordered_map<std::wstring, TrackInfo> TrackInfos;
 
 private:
     Config();

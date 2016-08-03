@@ -3,43 +3,68 @@
 #include <Windows.h>
 
 #include "AimpHTTP.h"
-
+#include "AIMPYouTube.h"
 #include "AIMPString.h"
 #include "Tools.h"
 #include <process.h>
 #include "SDK/apiFileManager.h"
 
-IAIMPCore *AimpHTTP::m_core = nullptr;
+bool AimpHTTP::m_initialized = false;
 IAIMPServiceHTTPClient *AimpHTTP::m_httpClient = nullptr;
+std::set<AimpHTTP::EventListener *> AimpHTTP::m_handlers;
 
 AimpHTTP::EventListener::EventListener(CallbackFunc callback, bool isFile) : m_isFileStream(isFile), m_callback(callback) {
+    AimpHTTP::m_handlers.insert(this);
+}
 
+AimpHTTP::EventListener::~EventListener() {
+    AimpHTTP::m_handlers.erase(this);
 }
 
 void WINAPI AimpHTTP::EventListener::OnAccept(IAIMPString *ContentType, const INT64 ContentSize, BOOL *Allow) {
     ContentType->AddRef();
     ContentType->Release();
-    *Allow = true;
+    *Allow = AimpHTTP::m_initialized && Plugin::instance()->core();
+}
+
+void WINAPI AimpHTTP::EventListener::OnAcceptHeaders(IAIMPString *Header, BOOL *Allow) {
+    Header->AddRef();
+    Header->Release();
+    *Allow = AimpHTTP::m_initialized && Plugin::instance()->core();
 }
 
 void WINAPI AimpHTTP::EventListener::OnComplete(IAIMPErrorInfo *ErrorInfo, BOOL Canceled) {
     if (m_stream) {
-        if (m_isFileStream) {
-            m_stream->Release();
-            if (m_callback)
-                m_callback(nullptr, 0);
-            return;
-        }
+        if (AimpHTTP::m_initialized && Plugin::instance()->core()) {
+            if (m_isFileStream) {
+                m_stream->Release();
+                if (m_callback)
+                    m_callback(nullptr, 0);
+                return;
+            }
 
-        int s = (int)m_stream->GetSize();
-        unsigned char *buf = new unsigned char[s + 1];
-        buf[s] = 0;
-        m_stream->Seek(0, AIMP_STREAM_SEEKMODE_FROM_BEGINNING);
-        m_stream->Read(buf, s);
+            if (m_callback || m_imageContainer) {
+                int s = (int)m_stream->GetSize();
+                unsigned char *buf = new unsigned char[s + 1];
+                buf[s] = 0;
+                m_stream->Seek(0, AIMP_STREAM_SEEKMODE_FROM_BEGINNING);
+                m_stream->Read(buf, s);
+
+                if (m_callback) {
+                    m_callback(buf, s);
+                } else if (m_imageContainer) {
+                    if (s <= m_maxSize) {
+                        (*m_imageContainer)->SetDataSize(s);
+                        memcpy((*m_imageContainer)->GetData(), buf, s);
+                    } else {
+                        (*m_imageContainer)->Release();
+                        *m_imageContainer = nullptr;
+                    }
+                }
+                delete[] buf;
+            }
+        }
         m_stream->Release();
-        if (m_callback)
-            m_callback(buf, s);
-        delete[] buf;
     }
 }
 
@@ -48,31 +73,57 @@ void WINAPI AimpHTTP::EventListener::OnProgress(const INT64 Downloaded, const IN
 }
 
 bool AimpHTTP::Get(const std::wstring &url, CallbackFunc callback, bool synchronous) {
+    if (!AimpHTTP::m_initialized || !Plugin::instance()->core())
+        return false;
+
     EventListener *listener = new EventListener(callback);
-    m_core->CreateObject(IID_IAIMPMemoryStream, reinterpret_cast<void **>(&(listener->m_stream)));
-    return SUCCEEDED(m_httpClient->Get(AIMPString(url), synchronous ? AIMP_SERVICE_HTTPCLIENT_FLAGS_WAITFOR : 0, listener->m_stream, listener, 0, nullptr));
+    Plugin::instance()->core()->CreateObject(IID_IAIMPMemoryStream, reinterpret_cast<void **>(&(listener->m_stream)));
+
+    return SUCCEEDED(m_httpClient->Get(AIMPString(url), synchronous ? AIMP_SERVICE_HTTPCLIENT_FLAGS_WAITFOR : 0, listener->m_stream, listener, 0, reinterpret_cast<void **>(&(listener->m_taskId))));
 }
 
 bool AimpHTTP::Download(const std::wstring &url, const std::wstring &destination, CallbackFunc callback) {
+    if (!AimpHTTP::m_initialized || !Plugin::instance()->core())
+        return false;
+
     EventListener *listener = new EventListener(callback, true);
     IAIMPServiceFileStreaming *fileStreaming = nullptr;
-    if (SUCCEEDED(m_core->QueryInterface(IID_IAIMPServiceFileStreaming, reinterpret_cast<void **>(&fileStreaming)))) {
+    if (SUCCEEDED(Plugin::instance()->core()->QueryInterface(IID_IAIMPServiceFileStreaming, reinterpret_cast<void **>(&fileStreaming)))) {
         fileStreaming->CreateStreamForFile(AIMPString(destination), AIMP_SERVICE_FILESTREAMING_FLAG_CREATENEW, -1, -1, &(listener->m_stream));
         fileStreaming->Release();
     }
     
-    return SUCCEEDED(m_httpClient->Get(AIMPString(url), 0, listener->m_stream, listener, 0, nullptr));
+    return SUCCEEDED(m_httpClient->Get(AIMPString(url), 0, listener->m_stream, listener, 0, reinterpret_cast<void **>(&(listener->m_taskId))));
+}
+
+bool AimpHTTP::DownloadImage(const std::wstring &url, IAIMPImageContainer **Image, int maxSize) {
+    if (!AimpHTTP::m_initialized || !Plugin::instance()->core())
+        return false;
+
+    EventListener *listener = new EventListener(nullptr);
+    Plugin::instance()->core()->CreateObject(IID_IAIMPMemoryStream, reinterpret_cast<void **>(&(listener->m_stream)));
+
+    if (SUCCEEDED(Plugin::instance()->core()->CreateObject(IID_IAIMPImageContainer, reinterpret_cast<void **>(Image)))) {
+        listener->m_imageContainer = Image;
+        listener->m_maxSize = maxSize;
+
+        return SUCCEEDED(m_httpClient->Get(AIMPString(url), AIMP_SERVICE_HTTPCLIENT_FLAGS_WAITFOR, listener->m_stream, listener, 0, reinterpret_cast<void **>(&(listener->m_taskId))));
+    }
+    return false;
 }
 
 bool AimpHTTP::Post(const std::wstring &url, const std::string &body, CallbackFunc callback, bool synchronous) {
+    if (!AimpHTTP::m_initialized || !Plugin::instance()->core())
+        return false;
+
     IAIMPStream *postData = nullptr;
-    if (SUCCEEDED(m_core->CreateObject(IID_IAIMPMemoryStream, reinterpret_cast<void **>(&postData)))) {
+    if (SUCCEEDED(Plugin::instance()->core()->CreateObject(IID_IAIMPMemoryStream, reinterpret_cast<void **>(&postData)))) {
         postData->Write((unsigned char *)(body.data()), body.size(), nullptr);
 
         EventListener *listener = new EventListener(callback);
-        m_core->CreateObject(IID_IAIMPMemoryStream, reinterpret_cast<void **>(&(listener->m_stream)));
-        bool ok = SUCCEEDED(m_httpClient->Post(AIMPString(url), synchronous ? AIMP_SERVICE_HTTPCLIENT_FLAGS_WAITFOR : 0, listener->m_stream, postData, listener, 0, nullptr));
+        Plugin::instance()->core()->CreateObject(IID_IAIMPMemoryStream, reinterpret_cast<void **>(&(listener->m_stream)));
 
+        bool ok = SUCCEEDED(m_httpClient->Post(AIMPString(url), synchronous ? AIMP_SERVICE_HTTPCLIENT_FLAGS_WAITFOR : 0, listener->m_stream, postData, listener, 0, reinterpret_cast<void **>(&(listener->m_taskId))));
         postData->Release();
         return ok;
     }
@@ -80,14 +131,22 @@ bool AimpHTTP::Post(const std::wstring &url, const std::string &body, CallbackFu
 }
 
 bool AimpHTTP::Init(IAIMPCore *Core) {
-    m_core = Core;
+    m_initialized = SUCCEEDED(Core->QueryInterface(IID_IAIMPServiceHTTPClient, reinterpret_cast<void **>(&m_httpClient)));
 
-    return SUCCEEDED(m_core->QueryInterface(IID_IAIMPServiceHTTPClient, reinterpret_cast<void **>(&m_httpClient)));
+    return m_initialized;
 }
 
 void AimpHTTP::Deinit() {
-    if (m_httpClient)
+    m_initialized = false;
+
+    std::unordered_set<uintptr_t *> ids;
+    for (auto x : m_handlers) ids.insert(x->m_taskId);
+    for (auto x : ids) m_httpClient->Cancel(x, AIMP_SERVICE_HTTPCLIENT_FLAGS_WAITFOR);
+
+    if (m_httpClient) {
         m_httpClient->Release();
+        m_httpClient = nullptr;
+    }
 }
 
 bool AimpHTTP::Put(const std::wstring &url, CallbackFunc callback) {
@@ -160,7 +219,7 @@ void AimpHTTP::RawRequestThread(void *args) {
     if ((dataLen = recv(webSocket, buffer, sizeof(buffer), 0) > 0)) {
         if (char *body = strstr(buffer, "\r\n\r\n")) {
             body += 4;
-            if (callback)
+            if (callback && m_initialized && Plugin::instance()->core())
                 callback(reinterpret_cast<unsigned char *>(body), strlen(body));
         }
     }

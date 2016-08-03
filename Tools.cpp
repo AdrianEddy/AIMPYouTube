@@ -88,7 +88,7 @@ std::string Tools::UrlDecode(const std::string &input) {
 }
 std::wstring Tools::TrackIdFromUrl(const std::wstring &url) {
     std::wstring id;
-    std::wstring::size_type pos;
+    std::wstring::size_type pos, pos_end;
     if (url.find(L"youtube.com") != std::wstring::npos) {
         if ((pos = url.find(L"?v=")) != std::wstring::npos) {
             id = url.c_str() + pos + 3;
@@ -112,9 +112,22 @@ std::wstring Tools::TrackIdFromUrl(const std::wstring &url) {
 
             return id;
         }
-    } else if (url.find(L"localhost") != std::wstring::npos) {
-        if ((pos = url.find(L"/", 8)) != std::wstring::npos) {
-            return url.c_str() + pos + 1;
+    } else if (url.find(L"googleapis.com/youtube/v3") != std::wstring::npos) {
+        if ((pos = url.find(L"&id=")) != std::wstring::npos) {
+            id = url.c_str() + pos + 4;
+        } else if ((pos = url.find(L"?id=")) != std::wstring::npos) {
+            id = url.c_str() + pos + 4;
+        } else {
+            return id;
+        }
+        if ((pos = id.find(L'&')) != std::wstring::npos)
+            id.resize(pos);
+    } else if ((pos = url.find(L"youtube://")) != std::wstring::npos) {
+        pos += 10;
+        if ((pos_end = url.find(L"/", pos)) != std::wstring::npos) {
+            return url.substr(pos, pos_end - pos);
+        } else {
+            return url.substr(pos);
         }
     }
     return id;
@@ -146,3 +159,17 @@ std::string Tools::Trim(const std::string &s) {
     return (wsback <= wsfront ? std::string() : std::string(wsfront, wsback));
 }
 
+Config::TrackInfo *Tools::TrackInfo(const std::wstring &id) {
+    if (!id.empty()) {
+        if (Config::TrackInfos.find(id) == Config::TrackInfos.end()) {
+            if (!Config::ResolveTrackInfo(id))
+                return nullptr;
+        }
+        return &Config::TrackInfos[id];
+    }
+    return nullptr;
+}
+
+Config::TrackInfo *Tools::TrackInfo(IAIMPString *FileName) {
+    return TrackInfo(Tools::TrackIdFromUrl(FileName->GetData()));
+}

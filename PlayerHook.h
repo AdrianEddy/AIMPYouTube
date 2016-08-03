@@ -16,5 +16,5 @@ class PlayerHook : public IUnknownInterfaceImpl<IAIMPExtensionPlayerHook> {
         return E_NOINTERFACE;
     }
 
-    virtual HRESULT WINAPI OnCheckURL(IAIMPString *URL, BOOL **Handled);
+    virtual HRESULT WINAPI OnCheckURL(IAIMPString *URL, BOOL *Handled);
 };

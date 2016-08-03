@@ -35,9 +35,13 @@ private:
     static void CALLBACK TimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime) {
         if (uMsg == WM_TIMER) {
             if (m_timers.find(idEvent) != m_timers.end()) {
-                m_timers[idEvent].Callback();
                 if (m_timers[idEvent].IsSingleShot) {
                     KillTimer(hwnd, idEvent);
+                }
+
+                m_timers[idEvent].Callback();
+
+                if (m_timers[idEvent].IsSingleShot) {
                     m_timers.erase(idEvent);
                 }
             }

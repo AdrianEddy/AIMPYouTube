@@ -11,6 +11,8 @@
 #include "AimpMenu.h"
 #include "resource.h"
 #include "PlayerHook.h"
+#include "FileSystem.h"
+#include "ArtworkProvider.h"
 #include <set>
 #include <ctime>
 
@@ -64,15 +66,20 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
     };
 
     if (AimpMenu *contextMenu = AimpMenu::Get(AIMP_MENUID_PLAYER_PLAYLIST_CONTEXT_FUNCTIONS)) {
-        contextMenu->Add(Lang(L"YouTube.Menu\\OpenInBrowser"), [this](IAIMPMenuItem *) {
-            ForSelectedTracks([this](IAIMPPlaylist *, IAIMPPlaylistItem *, const std::wstring &id) -> int {
-                if (!id.empty()) {
-                    std::wstring url = L"http://www.youtube.com/watch?v=" + id;
-                    ShellExecute(GetMainWindowHandle(), L"open", url.c_str(), NULL, NULL, SW_SHOWNORMAL);
-                }
-                return 0;
-            });
-        }, IDB_ICON, enableIfValid)->Release();
+        auto fs = new FileSystem(m_core);
+        if (FAILED(m_core->RegisterExtension(IID_IAIMPServiceFileSystems, static_cast<FileSystem::Base *>(fs)))) {
+            delete fs;
+
+            contextMenu->Add(Lang(L"YouTube.Menu\\OpenInBrowser"), [this](IAIMPMenuItem *) {
+                ForSelectedTracks([this](IAIMPPlaylist *, IAIMPPlaylistItem *, const std::wstring &id) -> int {
+                    if (auto ti = Tools::TrackInfo(id)) {
+                        if (!ti->Permalink.empty())
+                            ShellExecute(GetMainWindowHandle(), L"open", ti->Permalink.c_str(), NULL, NULL, SW_SHOWNORMAL);
+                    }
+                    return 0;
+                });
+            }, IDB_ICON, enableIfValid)->Release();
+        }
 
         contextMenu->Add(Lang(L"YouTube.Menu\\AddToExclusions"), [this](IAIMPMenuItem *) {
             ForSelectedTracks([](IAIMPPlaylist *, IAIMPPlaylistItem *, const std::wstring &id) -> int {
@@ -124,6 +131,10 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
     }
 
     if (FAILED(m_core->RegisterExtension(IID_IAIMPServicePlayer, new PlayerHook()))) {
+        Finalize();
+        return E_FAIL;
+    }
+    if (FAILED(m_core->RegisterExtension(IID_IAIMPServiceAlbumArt, new ArtworkProvider()))) {
         Finalize();
         return E_FAIL;
     }
@@ -193,7 +204,7 @@ void Plugin::MonitorCallback() {
             return;
         }
 
-        YouTubeAPI::LoadingState *state = new YouTubeAPI::LoadingState();
+        auto state = std::make_shared<YouTubeAPI::LoadingState>();
         state->ReferenceName = url.GroupName;
         state->Flags = url.Flags;
 
@@ -209,21 +220,28 @@ void Plugin::MonitorCallback() {
 
 HRESULT WINAPI Plugin::Finalize() {
     Timer::StopAll();
-    if (m_messageDispatcher) {
-        m_messageDispatcher->Unhook(m_messageHook);
-        m_messageDispatcher->Release();
-    }
-    if (m_muiService)
-        m_muiService->Release();
-
-    if (m_playlistManager)
-        m_playlistManager->Release();
 
     AimpMenu::Deinit();
     AimpHTTP::Deinit();
-      Config::Deinit();
+    Config::Deinit();
+
+    if (m_messageDispatcher) {
+        m_messageDispatcher->Unhook(m_messageHook);
+        m_messageDispatcher->Release();
+        m_messageDispatcher = nullptr;
+    }
+    if (m_muiService) {
+        m_muiService->Release();
+        m_muiService = nullptr;
+    }
+
+    if (m_playlistManager) {
+        m_playlistManager->Release();
+        m_playlistManager = nullptr;
+    }
 
     Gdiplus::GdiplusShutdown(m_gdiplusToken);
+    m_finalized = true;
     return S_OK;
 }
 
@@ -261,6 +279,30 @@ IAIMPPlaylist *Plugin::GetCurrentPlaylist() {
         return pl;
     }
     return nullptr;
+}
+
+void Plugin::ForAllPlaylists(std::function<void(IAIMPPlaylist *, const std::wstring &)> cb) {
+    if (!cb)
+        return;
+
+    int count = m_playlistManager->GetLoadedPlaylistCount();
+    for (int i = 0; i < count; ++i) {
+        IAIMPPlaylist *pl = nullptr;
+        if (SUCCEEDED(m_playlistManager->GetLoadedPlaylist(i, &pl))) {
+            std::wstring name;
+            IAIMPPropertyList *plProp = nullptr;
+            if (SUCCEEDED(pl->QueryInterface(IID_IAIMPPropertyList, reinterpret_cast<void **>(&plProp)))) {
+                IAIMPString *id = nullptr;
+                if (SUCCEEDED(plProp->GetValueAsObject(AIMP_PLAYLIST_PROPID_NAME, IID_IAIMPString, reinterpret_cast<void **>(&id)))) {
+                    name = id->GetData();
+                    id->Release();
+                }
+                plProp->Release();
+            }
+
+            cb(pl, name);
+        }
+    }
 }
 
 IAIMPPlaylist *Plugin::UpdatePlaylistGrouping(IAIMPPlaylist *pl) {

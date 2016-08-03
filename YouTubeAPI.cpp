@@ -5,17 +5,19 @@
 #include "SDK/apiFileManager.h"
 #include "SDK/apiPlaylists.h"
 #include "AIMPString.h"
+#include "DurationResolver.h"
 #include "Tools.h"
 #include "Timer.h"
 #include <Strsafe.h>
 #include <string>
 #include <set>
 #include <map>
+#include <regex>
 
 YouTubeAPI::DecoderMap YouTubeAPI::SigDecoder;
 
-void YouTubeAPI::AddFromJson(IAIMPPlaylist *playlist, const rapidjson::Value &d, LoadingState *state) {
-    if (!playlist || !state)
+void YouTubeAPI::AddFromJson(IAIMPPlaylist *playlist, const rapidjson::Value &d, std::shared_ptr<LoadingState> state) {
+    if (!playlist || !state || !Plugin::instance()->core())
         return;
 
     int insertAt = state->InsertPos;
@@ -24,7 +26,7 @@ void YouTubeAPI::AddFromJson(IAIMPPlaylist *playlist, const rapidjson::Value &d,
 
     IAIMPFileInfo *file_info = nullptr;
     if (Plugin::instance()->core()->CreateObject(IID_IAIMPFileInfo, reinterpret_cast<void **>(&file_info)) == S_OK) {
-        auto processItem = [&](const std::wstring &pid, const rapidjson::Value &item) {
+        auto processItem = [&](const std::wstring &pid, const rapidjson::Value &item, const rapidjson::Value &contentDetails) {
             if (!item.HasMember("title"))
                 return;
 
@@ -57,8 +59,11 @@ void YouTubeAPI::AddFromJson(IAIMPPlaylist *playlist, const rapidjson::Value &d,
                 state->PlaylistToUpdate->Items.insert(trackId);
             }
 
-            std::wstring final_url = L"https://www.youtube.com/watch?v=" + trackId;
-            file_info->SetValueAsObject(AIMP_FILEINFO_PROPID_FILENAME, AIMPString(final_url));
+            std::wstring filename(L"youtube://");
+            filename += trackId + L"/";
+            filename += final_title;
+            filename += L".mp4";
+            file_info->SetValueAsObject(AIMP_FILEINFO_PROPID_FILENAME, AIMPString(filename));
 
             if (!state->ReferenceName.empty()) {
                 file_info->SetValueAsObject(AIMP_FILEINFO_PROPID_ALBUM, AIMPString(state->ReferenceName));
@@ -67,25 +72,35 @@ void YouTubeAPI::AddFromJson(IAIMPPlaylist *playlist, const rapidjson::Value &d,
                 file_info->SetValueAsObject(AIMP_FILEINFO_PROPID_ARTIST, AIMPString(item["channelTitle"]));
             }
 
-            AIMPString title(final_title);
-            // TODO
-            /*int64_t videoDuration = 0;
-            if (Config::GetInt32(L"AddDurationToTitle", 0)) {
-                double duration = videoDuration / 1000.0;
-                wchar_t buf[128];
-                unsigned int hours = floor(duration / 3600.0);
-                if (hours > 0) {
-                    swprintf_s(buf, L" (%d:%02d:%02d)", hours, (uint32_t)floor(fmod(duration, 3600.0) / 60.0), (uint32_t)floor(fmod(duration, 60.0)));
-                } else {
-                    swprintf_s(buf, L" (%d:%02d)", (uint32_t)floor(fmod(duration, 3600.0) / 60.0), (uint32_t)floor(fmod(duration, 60.0)));
-                }
-                title->Add2(buf, wcslen(buf));
-            }
-            file_info->SetValueAsFloat(AIMP_FILEINFO_PROPID_DURATION, videoDuration / 1000.0);*/
+            int64_t videoDuration = 0;
+            if (contentDetails.IsObject() && contentDetails.HasMember("duration")) {
+                std::wstring duration = Tools::ToWString(contentDetails["duration"]);
 
+                std::wregex re(L"PT(?:([0-9]+)H)?(?:([0-9]+)M)?(?:([0-9]+)S)?");
+                std::wsmatch match;
+                if (std::regex_match(duration, match, re)) {
+                    auto h = match[1].matched ? std::stoll(match[1].str()) : 0;
+                    auto m = match[2].matched ? std::stoll(match[2].str()) : 0;
+                    auto s = match[3].matched ? std::stoll(match[3].str()) : 0;
+                    videoDuration = h * 3600 + m * 60 + s;
+
+                    file_info->SetValueAsFloat(AIMP_FILEINFO_PROPID_DURATION, videoDuration);
+                }
+            }
+
+            AIMPString title(final_title);
             file_info->SetValueAsObject(AIMP_FILEINFO_PROPID_TITLE, title);
 
-            const DWORD flags = AIMP_PLAYLIST_ADD_FLAGS_FILEINFO | AIMP_PLAYLIST_ADD_FLAGS_NOCHECKFORMAT | AIMP_PLAYLIST_ADD_FLAGS_NOEXPAND | AIMP_PLAYLIST_ADD_FLAGS_NOASYNC;
+            std::wstring artwork;
+            if (item.HasMember("thumbnails") && item["thumbnails"].IsObject() && item["thumbnails"].HasMember("high") && item["thumbnails"]["high"].HasMember("url")) {
+                artwork = Tools::ToWString(item["thumbnails"]["high"]["url"]);
+            }
+
+            auto permalink = L"https://www.youtube.com/watch?v=" + trackId;
+
+            Config::TrackInfos[trackId] = Config::TrackInfo(final_title, trackId, permalink, artwork, videoDuration);
+
+            const DWORD flags = AIMP_PLAYLIST_ADD_FLAGS_FILEINFO | AIMP_PLAYLIST_ADD_FLAGS_NOCHECKFORMAT | AIMP_PLAYLIST_ADD_FLAGS_NOEXPAND | AIMP_PLAYLIST_ADD_FLAGS_NOTHREADING;
             if (SUCCEEDED(playlist->Add(file_info, flags, insertAt))) {
                 state->AddedItems++;
                 if (insertAt >= 0) {
@@ -95,9 +110,9 @@ void YouTubeAPI::AddFromJson(IAIMPPlaylist *playlist, const rapidjson::Value &d,
                         state->AdditionalPos++;
                 }
             }
-
-            DebugA("Adding %s\n", item["title"].GetString());
         };
+
+        rapidjson::Value null;
 
         if (d.IsArray()) {
             for (auto x = d.Begin(), e = d.End(); x != e; x++) {
@@ -105,18 +120,18 @@ void YouTubeAPI::AddFromJson(IAIMPPlaylist *playlist, const rapidjson::Value &d,
                 if (!px->IsObject() || !px->HasMember("snippet"))
                     continue;
 
-                processItem((*px).HasMember("id") ? Tools::ToWString((*px)["id"]) : L"", (*px)["snippet"]);
+                processItem((*px).HasMember("id") ? Tools::ToWString((*px)["id"]) : L"", (*px)["snippet"], px->HasMember("contentDetails")? (*px)["contentDetails"] : null);
             }
         } else if (d.IsObject() && d.HasMember("snippet")) {
-            processItem(d.HasMember("id")? Tools::ToWString(d["id"]) : L"", d["snippet"]);
+            processItem(d.HasMember("id")? Tools::ToWString(d["id"]) : L"", d["snippet"], d.HasMember("contentDetails") ? d["contentDetails"] : null);
         } else if (d.IsObject()) {
-            processItem(L"", d);
+            processItem(L"", d, null);
         }
         file_info->Release();
     }
 }
 
-void YouTubeAPI::LoadFromUrl(std::wstring url, IAIMPPlaylist *playlist, LoadingState *state, std::function<void()> finishCallback) {
+void YouTubeAPI::LoadFromUrl(std::wstring url, IAIMPPlaylist *playlist, std::shared_ptr<LoadingState> state, std::function<void()> finishCallback) {
     if (!playlist || !state)
         return;
 
@@ -135,7 +150,7 @@ void YouTubeAPI::LoadFromUrl(std::wstring url, IAIMPPlaylist *playlist, LoadingS
         d.Parse(reinterpret_cast<const char *>(data));
 
         playlist->BeginUpdate();
-        if (d.IsObject() && d.HasMember("items") && d["items"].IsArray() && d["items"].Size() > 0 && d["items"][0].HasMember("contentDetails")) {
+        if (d.IsObject() && d.HasMember("items") && d["items"].IsArray() && d["items"].Size() > 0 && d["items"][0].HasMember("contentDetails") && d["items"][0]["contentDetails"].HasMember("relatedPlaylists")) {
             const rapidjson::Value &i = d["items"][0]["contentDetails"]["relatedPlaylists"];
             std::wstring uploads = Tools::ToWString(i["uploads"]);
             /*std::wstring favorites = Tools::ToWString(i["favorites"]);
@@ -149,7 +164,7 @@ void YouTubeAPI::LoadFromUrl(std::wstring url, IAIMPPlaylist *playlist, LoadingS
             }
             state->ReferenceName = userName;
 
-            LoadFromUrl(L"https://content.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=" + uploads +
+            LoadFromUrl(L"https://content.googleapis.com/youtube/v3/playlistItems?part=contentDetails%2Csnippet&maxResults=50&playlistId=" + uploads +
                         L"&fields=items%2Fsnippet%2Ckind%2CnextPageToken%2CpageInfo%2CtokenPagination", playlist, state, finishCallback);
 
             playlist->EndUpdate();
@@ -189,11 +204,12 @@ void YouTubeAPI::LoadFromUrl(std::wstring url, IAIMPPlaylist *playlist, LoadingS
             state->PendingUrls.pop();
         } else {
             // Finished
-            if (state->PlaylistToUpdate) {
-                Config::SaveExtendedConfig();
-            }
+            Config::SaveExtendedConfig();
+
+            DurationResolver::AddPlaylist(playlist);
+            DurationResolver::Resolve();
+
             playlist->Release();
-            delete state;
             if (finishCallback)
                 finishCallback();
         }
@@ -212,12 +228,12 @@ void YouTubeAPI::LoadUserPlaylist(Config::Playlist &playlist) {
 
     IAIMPPlaylist *pl = Plugin::instance()->GetPlaylist(playlistName);
 
-    LoadingState *state = new LoadingState();
+    auto state = std::make_shared<LoadingState>();
     state->PlaylistToUpdate = &playlist;
     state->ReferenceName = groupName;
     GetExistingTrackIds(pl, state);
 
-    std::wstring url(L"https://content.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=" + playlistId +
+    std::wstring url(L"https://content.googleapis.com/youtube/v3/playlistItems?part=contentDetails%2Csnippet&maxResults=50&playlistId=" + playlistId +
                      L"&fields=items%2Fsnippet%2Ckind%2CnextPageToken%2CpageInfo%2CtokenPagination");
 
     std::wstring plId;
@@ -243,7 +259,7 @@ void YouTubeAPI::LoadUserPlaylist(Config::Playlist &playlist) {
     LoadFromUrl(url, pl, state);
 }
 
-void YouTubeAPI::GetExistingTrackIds(IAIMPPlaylist *pl, LoadingState *state) {
+void YouTubeAPI::GetExistingTrackIds(IAIMPPlaylist *pl, std::shared_ptr<LoadingState> state) {
     if (!pl || !state)
         return;
 
@@ -262,7 +278,7 @@ void YouTubeAPI::ResolveUrl(const std::wstring &url, const std::wstring &playlis
         rapidjson::Value *addDirectly = nullptr;
         std::wstring plName;
         bool monitor = true;
-        LoadingState *state = new LoadingState();
+        auto state = std::make_shared<LoadingState>();
         std::set<std::wstring> toMonitor;
         std::wstring ytPlaylistId;
 
@@ -299,17 +315,17 @@ void YouTubeAPI::ResolveUrl(const std::wstring &url, const std::wstring &playlis
             if ((pos = id.find(L'&')) != std::wstring::npos)
                 id.resize(pos);
 
-            finalUrl = L"https://content.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=" + id +
+            finalUrl = L"https://content.googleapis.com/youtube/v3/playlistItems?part=contentDetails%2Csnippet&maxResults=50&playlistId=" + id +
                        L"&fields=items%2Fsnippet%2Ckind%2CnextPageToken%2CpageInfo%2CtokenPagination";
             plName = L"YouTube";
             ytPlaylistId = id;
         } else if (url.find(L"watch?") != std::wstring::npos) {
             std::wstring id = Tools::TrackIdFromUrl(url);
-            finalUrl = L"https://www.googleapis.com/youtube/v3/videos?part=snippet&hl=" + Plugin::instance()->Lang(L"YouTube\\YouTubeLang") + L"&id=" + id;
+            finalUrl = L"https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&hl=" + Plugin::instance()->Lang(L"YouTube\\YouTubeLang") + L"&id=" + id;
             plName = L"YouTube";
         } else if (url.find(L"youtu.be") != std::wstring::npos) {
             std::wstring id = Tools::TrackIdFromUrl(url);
-            finalUrl = L"https://www.googleapis.com/youtube/v3/videos?part=snippet&hl=" + Plugin::instance()->Lang(L"YouTube\\YouTubeLang") + L"&id=" + id;
+            finalUrl = L"https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&hl=" + Plugin::instance()->Lang(L"YouTube\\YouTubeLang") + L"&id=" + id;
             plName = L"YouTube";
         }
 
@@ -318,16 +334,12 @@ void YouTubeAPI::ResolveUrl(const std::wstring &url, const std::wstring &playlis
         if (createPlaylist) {
             finalPlaylistName = playlistTitle.empty() ? plName : playlistTitle;
             pl = Plugin::instance()->GetPlaylist(finalPlaylistName);
-            if (!pl) {
-                delete state;
+            if (!pl) 
                 return;
-            }
         } else {
             pl = Plugin::instance()->GetCurrentPlaylist();
-            if (!pl) {
-                delete state;
+            if (!pl) 
                 return;
-            }
         }
 
         std::wstring playlistId;
@@ -369,7 +381,6 @@ void YouTubeAPI::ResolveUrl(const std::wstring &url, const std::wstring &playlis
 
         if (addDirectly) {
             AddFromJson(pl, *addDirectly, state);
-            delete state;
         } else {
             LoadFromUrl(finalUrl, pl, state);
         }
@@ -549,8 +560,11 @@ void YouTubeAPI::LoadSignatureDecoder() {
                                     if (char *params = strchr((char *)token.c_str(), ',')) {
                                         if (char *end = strchr(params, ')')) *end = 0;
                                         int param = std::stoi(params + 1);
-                                        if (mutators.find(mutator) != mutators.end())
+                                        if (mutators.find(mutator) != mutators.end()) {
                                             YouTubeAPI::SigDecoder.push_back({ mutators[mutator], param });
+                                        } else {
+                                            DebugA("Unknown mutator: %s\n", mutator.c_str());
+                                        }
                                     }
                                 });
                             }

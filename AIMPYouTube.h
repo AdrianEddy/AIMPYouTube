@@ -30,6 +30,12 @@ public:
 
         return m_instance;
     }
+    ~Plugin() {
+        if (!m_finalized)
+            Finalize();
+
+        m_instance = nullptr;
+    }
 
     PWCHAR WINAPI InfoGet(int Index) {
         switch (Index) {
@@ -57,6 +63,7 @@ public:
     IAIMPPlaylist *UpdatePlaylistGrouping(IAIMPPlaylist *pl);
     std::wstring PlaylistId(IAIMPPlaylist *pl);
     IAIMPPlaylistItem *GetCurrentTrack();
+    void ForAllPlaylists(std::function<void(IAIMPPlaylist *, const std::wstring &)> cb);
 
     std::wstring Lang(const std::wstring &key, int part = -1);
 
@@ -92,6 +99,8 @@ private:
     Plugin &operator=(const Plugin &);
 
     static Plugin *m_instance;
+
+    bool m_finalized{false};
 
     MessageHook *m_messageHook;
     IAIMPServicePlaylistManager *m_playlistManager;

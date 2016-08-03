@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -15,6 +15,7 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>AIMPYouTube</RootNamespace>
     <ProjectName>AIMPYouTube</ProjectName>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -26,7 +27,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -90,6 +91,10 @@
     <ClInclude Include="AimpMenu.h" />
     <ClInclude Include="AIMPYouTube.h" />
     <ClInclude Include="AIMPString.h" />
+    <ClInclude Include="ArtworkProvider.h" />
+    <ClInclude Include="DurationResolver.h" />
+    <ClInclude Include="ExclusionsDialog.h" />
+    <ClInclude Include="FileSystem.h" />
     <ClInclude Include="GdiPlusImageLoader.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="IUnknownInterfaceImpl.h" />
@@ -109,6 +114,7 @@
     <ClCompile Include="AimpMenu.cpp" />
     <ClCompile Include="AIMPYouTube.cpp" />
     <ClCompile Include="AIMPString.cpp" />
+    <ClCompile Include="ArtworkProvider.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="dllmain.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
@@ -118,6 +124,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="DurationResolver.cpp" />
+    <ClCompile Include="ExclusionsDialog.cpp" />
+    <ClCompile Include="FileSystem.cpp" />
     <ClCompile Include="MessageHook.cpp" />
     <ClCompile Include="OptionsDialog.cpp" />
     <ClCompile Include="PlayerHook.cpp" />

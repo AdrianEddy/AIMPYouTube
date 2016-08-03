@@ -3,10 +3,12 @@
 #include <string>
 #include <cinttypes>
 #include <functional>
+#include "Config.h"
+#include "Strsafe.h"
 #include "rapidjson/document.h"
 
 #define DebugA(...) { char msg[2048]; sprintf_s(msg, __VA_ARGS__); OutputDebugStringA(msg); }
-#define DebugW(...) { wchar_t msg[2048]; wsprintf(msg, __VA_ARGS__); OutputDebugStringW(msg); }
+#define DebugW(...) { wchar_t msg[2048]; StringCchPrintfW(msg, sizeof(msg), __VA_ARGS__); OutputDebugStringW(msg); }
 
 struct Tools {
     static std::wstring ToWString(const std::string &);
@@ -19,6 +21,8 @@ struct Tools {
     static  std::string Trim(const std::string &s);
 
     static std::wstring TrackIdFromUrl(const std::wstring &);
+    static Config::TrackInfo *TrackInfo(const std::wstring &id);
+    static Config::TrackInfo *TrackInfo(IAIMPString *FileName);
 
     static std::wstring UrlEncode(const std::wstring &);
     static std::string UrlDecode(const std::string &input);
