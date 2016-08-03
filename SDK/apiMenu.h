@@ -1,10 +1,10 @@
 /************************************************/
 /*                                              */
 /*          AIMP Programming Interface          */
-/*               v3.60 build 1455               */
+/*               v4.00 build 1690               */
 /*                                              */
 /*                Artem Izmaylov                */
-/*                (C) 2006-2015                 */
+/*                (C) 2006-2016                 */
 /*                 www.aimp.ru                  */
 /*              ICQ: 345-908-513                */
 /*            Mail: support@aimp.ru             */
@@ -35,6 +35,8 @@ const int AIMP_MENUITEM_PROPID_GLYPH        = 10;
 const int AIMP_MENUITEM_PROPID_PARENT       = 11;
 const int AIMP_MENUITEM_PROPID_VISIBLE      = 12;
 const int AIMP_MENUITEM_PROPID_CHECKED		= 13;
+const int AIMP_MENUITEM_PROPID_DEFAULT      = 14;
+const int AIMP_MENUITEM_PROPID_SHORTCUT     = 15;
 
 // Styles for the AIMP_MENUITEM_PROPID_STYLE property
 const int AIMP_MENUITEM_STYLE_NORMAL   = 0;
@@ -58,6 +60,19 @@ const int AIMP_MENUID_PLAYER_PLAYLIST_CONTEXT_SENDING   = 33;
 const int AIMP_MENUID_PLAYER_PLAYLIST_CONTEXT_DELETION  = 34;  
 const int AIMP_MENUID_PLAYER_TRAY                       = 40;
 const int AIMP_MENUID_PLAYER_EQ_LIB                     = 41;
+const int AIMP_MENUID_PLAYER_STOP_OPTIONS               = 42; // v4.00.1690
+const int AIMP_MENUID_ML_MISCELLANEOUS                  = 50; // v4.10
+const int AIMP_MENUID_ML_DELETION                       = 51; // v4.10
+const int AIMP_MENUID_ML_MAIN_DB                        = 60; // v4.10
+const int AIMP_MENUID_ML_MAIN_FUNCTIONS                 = 61; // v4.10
+const int AIMP_MENUID_ML_MAIN_OPEN                      = 62; // v4.10
+const int AIMP_MENUID_ML_MAIN_OPTIONS                   = 63; // v4.10
+const int AIMP_MENUID_ML_TABLE_CONTEXT_ADDING           = 70; // v4.10
+const int AIMP_MENUID_ML_TABLE_CONTEXT_FUNCTIONS        = 71; // v4.10
+const int AIMP_MENUID_ML_TABLE_CONTEXT_SENDING          = 72; // v4.10
+const int AIMP_MENUID_ML_TABLE_CONTEXT_DELETION         = 73; // v4.10
+const int AIMP_MENUID_ML_TREE_CONTEXT_FUNCTIONS         = 80; // v4.10
+const int AIMP_MENUID_ML_TREE_CONTEXT_DELETION          = 81; // v4.10
 
 /* IAIMPMenuItem */
 

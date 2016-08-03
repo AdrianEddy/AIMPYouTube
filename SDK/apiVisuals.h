@@ -44,6 +44,7 @@ struct TAIMPVisualData
 	float Peaks[2];
 	TAIMPVisualDataSpectrum Spectrum[3];
 	TAIMPVisualDataWaveform WaveForm[2];
+	int Reserved;
 };
 #pragma pack(pop)
 typedef TAIMPVisualData* PAIMPVisualData;

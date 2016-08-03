@@ -1,12 +1,12 @@
 /************************************************/
 /*                                              */
 /*          AIMP Programming Interface          */
-/*               v3.60 build 1455               */
+/*               v4.00 build 1660               */
 /*                                              */
 /*                Artem Izmaylov                */
 /*                (C) 2006-2015                 */
 /*                 www.aimp.ru                  */
-/*              ICQ: 345-908-513                */
+/*                                              */
 /*            Mail: support@aimp.ru             */
 /*                                              */
 /************************************************/
@@ -22,11 +22,13 @@ static const GUID IID_IAIMPErrorInfo = {0x41494D50, 0x4572, 0x7249, 0x6E, 0x66, 
 static const GUID IID_IAIMPHashCode = {0x41494D50, 0x4861, 0x7368, 0x43, 0x6F, 0x64, 0x65, 0x00, 0x00, 0x00, 0x00};
 static const GUID IID_IAIMPFileStream = {0x41494D50, 0x4669, 0x6C65, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6D, 0x00, 0x00};
 static const GUID IID_IAIMPImage = {0x41494D50, 0x496D, 0x6167, 0x65, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+static const GUID IID_IAIMPImage2 = {0x41494D50, 0x496D, 0x6167, 0x65, 0x32, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 static const GUID IID_IAIMPImageContainer = {0x41494D50, 0x496D, 0x6167, 0x65, 0x43, 0x6F, 0x6E, 0x74, 0x6E, 0x72, 0x00};
 static const GUID IID_IAIMPMemoryStream = {0x41494D50, 0x4D65, 0x6D53, 0x74, 0x72, 0x65, 0x61, 0x6D, 0x00, 0x00, 0x00};
 static const GUID IID_IAIMPObjectList = {0x41494D50, 0x4F62, 0x6A4C, 0x69, 0x73, 0x74, 0x00, 0x00, 0x00, 0x00, 0x00};
 static const GUID IID_IAIMPProgressCallback = {0x41494D50, 0x5072, 0x6F67, 0x72, 0x65, 0x73, 0x73, 0x43, 0x42, 0x00, 0x00};
 static const GUID IID_IAIMPPropertyList = {0x41494D50, 0x5072, 0x6F70, 0x4C, 0x69, 0x73, 0x74, 0x00, 0x00, 0x00, 0x00};
+static const GUID IID_IAIMPPropertyList2 = {0x41494D50, 0x5072, 0x6F70, 0x4C, 0x69, 0x73, 0x74, 0x32, 0x00, 0x00, 0x00};
 static const GUID IID_IAIMPStream = {0x41494D50, 0x5374, 0x7265, 0x61, 0x6D, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 static const GUID IID_IAIMPString = {0x41494D50, 0x5374, 0x7269, 0x6E, 0x67, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
@@ -180,6 +182,20 @@ class IAIMPImage: public IUnknown
 		virtual HRESULT WINAPI Resize(int Width, int Height) = 0;
 };
 
+/* IAIMPImage2 */
+
+class IAIMPImage2: public IAIMPImage
+{
+	public:
+		virtual HRESULT WINAPI LoadFromResource(HMODULE ResInstance, WCHAR* ResName, WCHAR* ResType) = 0;
+		virtual HRESULT WINAPI LoadFromBitmap(HBITMAP Bitmap) = 0;
+		virtual HRESULT WINAPI LoadFromBits(RGBQUAD* Bits, int Width, int Height) = 0;
+		virtual HRESULT WINAPI CopyToClipboard() = 0;
+		virtual HRESULT WINAPI CanPasteFromClipboard() = 0;
+		virtual HRESULT WINAPI PasteFromClipboard() = 0;
+};
+
+
 /* IAIMPImageContainer */
 
 class IAIMPImageContainer: public IUnknown
@@ -189,7 +205,7 @@ class IAIMPImageContainer: public IUnknown
 		virtual HRESULT WINAPI GetInfo(SIZE *Size, int *FormatID) = 0;
 		virtual byte* WINAPI GetData() = 0;
 		virtual DWORD WINAPI GetDataSize() = 0;
-		virtual HRESULT WINAPI SetDataSize(DWORD Value) = 0;		
+		virtual HRESULT WINAPI SetDataSize(DWORD Value) = 0;
 };
 
 /* IAIMPProgressCallback */
@@ -218,6 +234,15 @@ class IAIMPPropertyList: public IUnknown
 		virtual HRESULT WINAPI SetValueAsInt32(int PropertyID, int Value) = 0;
 		virtual HRESULT WINAPI SetValueAsInt64(int PropertyID, const INT64 Value) = 0;
 		virtual HRESULT WINAPI SetValueAsObject(int PropertyID, IUnknown *Value) = 0;
+};
+
+/* IAIMPPropertyList2 */
+
+class IAIMPPropertyList2: public IAIMPPropertyList
+{
+	public:
+		virtual HRESULT WINAPI GetValueAsVariant(int PropertyID, VARIANT* Value) = 0;
+		virtual HRESULT WINAPI SetValueAsVariant(int PropertyID, const VARIANT Value) = 0;
 };
 
 /* IAIMPConfig */

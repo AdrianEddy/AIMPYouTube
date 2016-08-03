@@ -1,12 +1,12 @@
 /************************************************/
 /*                                              */
 /*          AIMP Programming Interface          */
-/*               v3.60 build 1455               */
+/*               v4.00 build 1660               */
 /*                                              */
 /*                Artem Izmaylov                */
 /*                (C) 2006-2015                 */
 /*                 www.aimp.ru                  */
-/*              ICQ: 345-908-513                */
+/*                                              */
 /*            Mail: support@aimp.ru             */
 /*                                              */
 /************************************************/
@@ -25,6 +25,7 @@ static const GUID IID_IAIMPOptionsDialogFrameKeyboardHelper = {0x41494D50, 0x4F7
 const int AIMP_SERVICE_OPTIONSDIALOG_NOTIFICATION_LOAD = 0x1;
 const int AIMP_SERVICE_OPTIONSDIALOG_NOTIFICATION_LOCALIZATION = 0x2;
 const int AIMP_SERVICE_OPTIONSDIALOG_NOTIFICATION_SAVE = 0x3;
+const int AIMP_SERVICE_OPTIONSDIALOG_NOTIFICATION_CAN_SAVE = 0x4;
 
 /* IAIMPOptionsDialogFrame */
 

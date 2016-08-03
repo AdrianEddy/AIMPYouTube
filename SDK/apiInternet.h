@@ -1,12 +1,12 @@
 /************************************************/
 /*                                              */
 /*          AIMP Programming Interface          */
-/*               v3.60 build 1455               */
+/*               v4.00 build 1660               */
 /*                                              */
 /*                Artem Izmaylov                */
 /*                (C) 2006-2015                 */
 /*                 www.aimp.ru                  */
-/*              ICQ: 345-908-513                */
+/*                                              */
 /*            Mail: support@aimp.ru             */
 /*                                              */
 /************************************************/
@@ -21,7 +21,9 @@
 
 static const GUID IID_IAIMPServiceConnectionSettings = {0x4941494D, 0x5053, 0x7276, 0x43, 0x6F, 0x6E, 0x6E, 0x43, 0x66, 0x67, 0x00};
 static const GUID IID_IAIMPServiceHTTPClient = {0x41494D50, 0x5372, 0x7648, 0x74, 0x74, 0x70, 0x43, 0x6C, 0x74, 0x00, 0x00};
+static const GUID IID_IAIMPServiceHTTPClient2 = {0x41494D50, 0x5372, 0x7648, 0x74, 0x74, 0x70, 0x43, 0x6C, 0x74, 0x32, 0x00};
 static const GUID IID_IAIMPHTTPClientEvents = {0x41494D50, 0x4874, 0x7470, 0x43, 0x6C, 0x74, 0x45, 0x76, 0x74, 0x73, 0x00};
+static const GUID IID_IAIMPHTTPClientEvents2 = {0x41494D50, 0x4874, 0x7470, 0x43, 0x6C, 0x74, 0x45, 0x76, 0x74, 0x73, 0x32};
 
 // PropIDs for IAIMPServiceConnectionSettings
 const int AIMP_SERVICE_CONSET_PROPID_CONNECTION_TYPE = 1;
@@ -44,6 +46,13 @@ const int AIMP_SERVICE_HTTPCLIENT_FLAGS_PRIORITY_NORMAL = 0;
 const int AIMP_SERVICE_HTTPCLIENT_FLAGS_PRIORITY_LOW    = 4;
 const int AIMP_SERVICE_HTTPCLIENT_FLAGS_PRIORITY_HIGH   = 8;
 
+// Methods for IAIMPServiceHTTPClient2.Request
+const int AIMP_SERVICE_HTTPCLIENT_METHOD_GET    = 0;
+const int AIMP_SERVICE_HTTPCLIENT_METHOD_POST   = 1;
+const int AIMP_SERVICE_HTTPCLIENT_METHOD_PUT    = 2;
+const int AIMP_SERVICE_HTTPCLIENT_METHOD_DELETE = 3;
+const int AIMP_SERVICE_HTTPCLIENT_METHOD_HEAD   = 4;
+
 /* IAIMPHTTPClientEvents */
 
 class IAIMPHTTPClientEvents: public IUnknown
@@ -54,6 +63,14 @@ class IAIMPHTTPClientEvents: public IUnknown
 		virtual void WINAPI OnProgress(const INT64 Downloaded, const INT64 Total) = 0;
 };
 
+/* IAIMPHTTPClientEvents2 */
+
+class IAIMPHTTPClientEvents2: public IUnknown
+{
+	public:
+		virtual void WINAPI OnAcceptHeaders(IAIMPString* Header, BOOL* Allow) = 0;
+};
+  
 /* IAIMPServiceConnectionSettings */
 
 class IAIMPServiceConnectionSettings: public IAIMPPropertyList
@@ -68,6 +85,17 @@ class IAIMPServiceHTTPClient: public IUnknown
 		virtual HRESULT WINAPI Get(IAIMPString *URL, DWORD Flags, IAIMPStream *AnswerData,
 			IAIMPHTTPClientEvents *EventHandler, IAIMPConfig *Params, void **TaskID) = 0;
 		virtual HRESULT WINAPI Post(IAIMPString *URL, DWORD Flags, IAIMPStream *AnswerData, IAIMPStream *PostData,
+			IAIMPHTTPClientEvents *EventHandler, IAIMPConfig *Params, void **TaskID) = 0;
+		virtual HRESULT WINAPI Cancel(void *TaskID, DWORD Flags) = 0;
+};
+
+/* IAIMPServiceHTTPClient2 */
+
+class IAIMPServiceHTTPClient2: public IUnknown
+{
+	public:
+		virtual HRESULT WINAPI Post(IAIMPString *URL, DWORD Method, DWORD Flags, 
+			IAIMPStream *AnswerData, IAIMPStream *PostData,
 			IAIMPHTTPClientEvents *EventHandler, IAIMPConfig *Params, void **TaskID) = 0;
 		virtual HRESULT WINAPI Cancel(void *TaskID, DWORD Flags) = 0;
 };

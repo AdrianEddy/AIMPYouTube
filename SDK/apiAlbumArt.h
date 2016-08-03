@@ -52,7 +52,7 @@ typedef void (CALLBACK TAIMPServiceAlbumArtReceiveProc)(IAIMPImage *image, IAIMP
 class IAIMPExtensionAlbumArtCatalog: public IUnknown
 {
 	public:
-		virtual HRESULT WINAPI GetIcon(HICON *Image) = 0;
+		virtual HRESULT WINAPI GetIcon(HICON **Image) = 0;
 		virtual HRESULT WINAPI GetName(IAIMPString **Name) = 0;
 		virtual HRESULT WINAPI Show(IAIMPString *FileURI, IAIMPString *Artist, IAIMPString *Album, IAIMPImageContainer **Image) = 0;
 };
