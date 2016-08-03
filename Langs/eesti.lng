@@ -43,3 +43,11 @@ Favorites=Lemmikud
 Uploads=Üleslaadimised
 Likes=Meeldimised
 WatchLater=Vaata hiljem
+
+[YouTube.Exclusions]
+Title=Track exclusions
+Header=Manage track exclusions
+ListHeader=Track title|Duration
+Remove=Remove from exclusions
+RemoveAndAddToPlaylist=Remove from exclusions and add to playlist
+OK=OK

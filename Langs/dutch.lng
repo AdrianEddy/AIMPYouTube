@@ -46,3 +46,10 @@ Likes=Likes
 Uploads=Uploads
 WatchLater=Later bekijken
 
+[YouTube.Exclusions]
+Title=Track exclusions
+Header=Manage track exclusions
+ListHeader=Track title|Duration
+Remove=Remove from exclusions
+RemoveAndAddToPlaylist=Remove from exclusions and add to playlist
+OK=OK

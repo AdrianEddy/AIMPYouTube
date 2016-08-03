@@ -43,3 +43,11 @@ Favorites=Ulubione
 Uploads=Przesłane
 Likes=Fajne filmy
 WatchLater=Obejrzyj później
+
+[YouTube.Exclusions]
+Title=Wykluczenia utworów
+Header=Zarządzaj wykluczeniami
+ListHeader=Nazwa utworu|Czas trwania
+Remove=Usuń z wykluczeń
+RemoveAndAddToPlaylist=Usuń z wykluczeń i dodaj do playlisty
+OK=OK
