@@ -5,6 +5,8 @@
 #include <ShlObj.h>
 #include "SDK/apiCore.h"
 #include "AimpHTTP.h"
+#include "Tools.h"
+#include <regex>
 #include "rapidjson/document.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/prettywriter.h"
@@ -211,43 +213,51 @@ void Config::LoadCache() {
 }
 
 bool Config::ResolveTrackInfo(const std::wstring &id) {
-    // TODO
-    /*std::wstring url(L"https://api.soundcloud.com/tracks/");
-    url += std::to_wstring(id);
-    url += L"/?client_id=" TEXT(STREAM_CLIENT_ID);
-
+    std::wstring url(L"https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&hl=" + Plugin::instance()->Lang(L"YouTube\\YouTubeLang") + L"&id=" + id);
+    url += L"&key=" TEXT(APP_KEY);
     if (Plugin::instance()->isConnected())
-        url += L"&oauth_token=" + Plugin::instance()->getAccessToken();
+        url += L"\r\nAuthorization: Bearer " + Plugin::instance()->getAccessToken();
 
     bool result = false;
+    std::wstring title, artwork;
+    int64_t videoDuration = -1;
+    auto permalink = L"https://www.youtube.com/watch?v=" + id;
+
     AimpHTTP::Get(url, [&](unsigned char *data, int size) {
         rapidjson::Document d;
         d.Parse(reinterpret_cast<const char *>(data));
 
-        if (!d.IsObject() || !d.HasMember("id"))
-            return;
+        if (d.IsObject() && d.HasMember("items") && d["items"].IsArray() && d["items"].Size() > 0) {
+            auto &snippet = d["items"][0]["snippet"];
+            auto &contentDetails = d["items"][0]["contentDetails"];
 
-        int64_t trackId = d["id"].GetInt64();
-        std::wstring stream_url(L"https://api.soundcloud.com/tracks/" + std::to_wstring(trackId) + L"/stream");
-        if (d.HasMember("stream_url"))
-            stream_url = Tools::ToWString(d["stream_url"]);
+            title = Tools::ToWString(snippet["title"]);
+            if (title != L"Deleted video" && title != L"Private video") {
+                if (contentDetails.IsObject() && contentDetails.HasMember("duration")) {
+                    std::wstring duration = Tools::ToWString(contentDetails["duration"]);
 
-        std::wstring waveform_id(Tools::ToWString(d["waveform_url"]));
-        if (!waveform_id.empty()) {
-            std::wstring::size_type ptr, ptr_end;
-            if ((ptr = waveform_id.find(L".com/")) != std::wstring::npos) {
-                ptr += 5;
-                if ((ptr_end = waveform_id.find(L".", ptr)) != std::wstring::npos) {
-                    waveform_id = waveform_id.substr(ptr, ptr_end - ptr);
+                    std::wregex re(L"PT(?:([0-9]+)H)?(?:([0-9]+)M)?(?:([0-9]+)S)?");
+                    std::wsmatch match;
+                    if (std::regex_match(duration, match, re)) {
+                        auto h = match[1].matched ? std::stoll(match[1].str()) : 0;
+                        auto m = match[2].matched ? std::stoll(match[2].str()) : 0;
+                        auto s = match[3].matched ? std::stoll(match[3].str()) : 0;
+                        videoDuration = h * 3600 + m * 60 + s;
+                    }
                 }
+
+                if (snippet.HasMember("thumbnails") && snippet["thumbnails"].IsObject() && snippet["thumbnails"].HasMember("high") && snippet["thumbnails"]["high"].HasMember("url")) {
+                    artwork = Tools::ToWString(snippet["thumbnails"]["high"]["url"]);
+                }
+
+                result = true;
             }
         }
-        Config::TrackInfos[trackId] = Config::TrackInfo(Tools::ToWString(d["title"]), stream_url, Tools::ToWString(d["permalink_url"]), Tools::ToWString(d["artwork_url"]), d["duration"].GetInt64() / 1000.0);
-        result = true;
+
+        TrackInfos[id] = TrackInfo(title, id, permalink, artwork, videoDuration);
 
         Config::SaveCache();
     }, true);
 
-    return result;*/
-    return false;
+    return result;
 }

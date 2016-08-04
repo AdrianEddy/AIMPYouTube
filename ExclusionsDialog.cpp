@@ -125,6 +125,7 @@ BOOL CALLBACK ExclusionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPAR
             auto lv = GetDlgItem(hwnd, IDC_LISTVIEW);
 
             SetWindowSubclass(GetDlgItem(hwnd, IDC_EXCLUSIONSGROUPBOX), OptionsDialog::GroupBoxProc, 0, 0); SendDlgItemMessage(hwnd, IDC_EXCLUSIONSGROUPBOX, WM_SUBCLASSINIT, 0, 0);
+            SetWindowSubclass(GetDlgItem(hwnd, IDC_LISTVIEW), ListViewProc, 0, 0);
 
             ListView_SetExtendedListViewStyle(lv, LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
             SetExplorerTheme(lv);
@@ -185,4 +186,35 @@ BOOL CALLBACK ExclusionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPAR
         default: return FALSE;
     }
     return TRUE;
+}
+
+LRESULT CALLBACK ExclusionsDialog::ListViewProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
+    switch (uMsg) {
+        case WM_KEYUP:
+            switch (wParam) {
+                case VK_DELETE: {
+                    int i = ListView_GetNextItem(hWnd, -1, LVNI_SELECTED);
+                    if (i != -1) {
+                        while (i != -1) {
+                            LVITEM selectedItem;
+                            selectedItem.mask = LVIF_PARAM;
+                            selectedItem.iItem = i;
+                            ListView_GetItem(hWnd, (LVITEM *)&selectedItem);
+
+                            if (auto ti = reinterpret_cast<Config::TrackInfo *>(selectedItem.lParam)) {
+                                Config::TrackExclusions.erase(ti->Id);
+                                ListView_DeleteItem(hWnd, i--);
+                            }
+                            i = ListView_GetNextItem(hWnd, i, LVNI_SELECTED);
+                        }
+                        Config::SaveExtendedConfig();
+                    }
+                } break;
+            }
+            break;
+        case WM_NCDESTROY:
+            RemoveWindowSubclass(hWnd, ListViewProc, uIdSubclass);
+            break;
+    }
+    return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
