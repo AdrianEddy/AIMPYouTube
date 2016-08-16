@@ -7,7 +7,7 @@ LangId=1029
 [YouTube]
 ConnectStatusOK=Přístup povolen|Nyní můžete zavřít toto okno prohlížeče a přejít zpět do přehrávače AIMP.
 ConnectStatusError=Omlouváme se, došlo k chybě|Nelze navázat spojení s účtem služby YouTube. Přejděte zpět do přehrávače AIMP a zkuste to znovu.
-YouTubeLang=en
+YouTubeLang=cs
 
 [YouTube.Messages]
 Error=Chyba
