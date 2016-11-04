@@ -1,0 +1,45 @@
+[FILE]
+Author=Andronachi Marian
+Name=Română (RO)
+VersionID=0
+LangId=1048
+
+[YouTube]
+ConnectStatusOK=Autentificare cu succes|Acum puteți închide această fereastră de browser și puteți reveni la AIMP.
+ConnectStatusError=Eroare de autentificare|Nu m-am putut conecta la contul de YouTube.<br/>Vă rugăm să reveniți la AIMP și să încercați din nou.
+YouTubeLang=ro
+
+[YouTube.Messages]
+Error=Eroare
+CantResolve=Nu am putut rezolva această adresă URL.
+
+[YouTube.Menu]
+AddURL=YouTube URL
+OpenInBrowser=Deschide în browser-ul web
+AddToExclusions=Adaugă la excluderi
+AddTo=Adaugă la
+RemoveFrom=Șterge din
+CheckForNewItems=Verifică dacă sunt videoclipuri noi
+
+[YouTube.AddURL]
+Title=Adaugă o adresă url de pe YouTube
+URL=Adresa url al videoclipului sau al unei liste:
+CreateNew=Creează o nouă listă de redare.
+OK=OK
+PlaylistName=Denumirea listei de redare (optional):
+
+[YouTube.Options]
+Title=YouTube
+Account=Cont
+ConnectButton=Conectare|Deconectare
+General=General
+MonitorURLs=Monitorizează adresele url adăugate
+MonitorUserPlaylists=Monitorizează lista de redare ale utilizatorilor.
+CheckAtStartup=Verifică daca sunt melodii noi când pornește AIMP.
+CheckEvery=Verifică daca sunt melodii noi la fiecare|(de) ore.
+
+[YouTube.Playlists]
+Favorites=Favorite
+Uploads=Încărcări
+Likes=Aprecieri
+WatchLater=Vizionează mai târziu
