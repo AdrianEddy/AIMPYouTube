@@ -7,7 +7,7 @@ LangId=1029
 [YouTube]
 ConnectStatusOK=Přístup povolen|Nyní můžete zavřít toto okno prohlížeče a přejít zpět do přehrávače AIMP.
 ConnectStatusError=Omlouváme se, došlo k chybě|Nelze navázat spojení s účtem služby YouTube. Přejděte zpět do přehrávače AIMP a zkuste to znovu.
-YouTubeLang=en
+YouTubeLang=cs
 
 [YouTube.Messages]
 Error=Chyba
@@ -45,9 +45,9 @@ Likes=Líbilo se
 WatchLater=Přehrát později
 
 [YouTube.Exclusions]
-Title=Track exclusions
-Header=Manage track exclusions
-ListHeader=Track title|Duration
-Remove=Remove from exclusions
-RemoveAndAddToPlaylist=Remove from exclusions and add to playlist
+Title=Výjimky skladeb
+Header=Spravovat výjimky skladeb
+ListHeader=Název skladby|Délka
+Remove=Odstranit z výjimek
+RemoveAndAddToPlaylist=Odstranit z výjimek a přidat do playlistu
 OK=OK
