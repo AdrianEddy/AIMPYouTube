@@ -25,30 +25,43 @@ IAIMPMenuItem *AimpMenu::Add(const std::wstring &name, CallbackFunc action, UINT
         newItem->SetValueAsObject(AIMP_MENUITEM_PROPID_ID, AIMPString(L"AIMPYouTube" + (id.empty() ? name : id)));
 
         if (action) {
+            IAIMPServiceActionManager *manager = nullptr;
             IAIMPAction *newAction = nullptr;
-            if (SUCCEEDED(m_core->CreateObject(IID_IAIMPAction, reinterpret_cast<void **>(&newAction)))) {
-                newAction->SetValueAsObject(AIMP_ACTION_PROPID_ID, AIMPString(L"AIMPYouTubeAction" + (id.empty() ? name : id)));
-                newAction->SetValueAsObject(AIMP_ACTION_PROPID_GROUPNAME, AIMPString(L"YouTube"));
-                AIMPString actionName;
-                if (m_menuItem) {
-                    IAIMPString *parentName;
-                    if (SUCCEEDED(m_menuItem->GetValueAsObject(AIMP_MENUITEM_PROPID_NAME, IID_IAIMPString, reinterpret_cast<void **>(&parentName)))) {
-                        actionName->Add(parentName);
-                        parentName->Release();
-                        actionName->Add2(L" -> ", 4);
+
+            AIMPString actionName;
+            if (m_menuItem) {
+                IAIMPString *parentName;
+                if (SUCCEEDED(m_menuItem->GetValueAsObject(AIMP_MENUITEM_PROPID_NAME, IID_IAIMPString, reinterpret_cast<void **>(&parentName)))) {
+                    actionName->Add(parentName);
+                    parentName->Release();
+                    actionName->Add2(L" -> ", 4);
+                }
+            }
+            actionName->Add(AIMPString(name));
+
+            if (SUCCEEDED(m_core->QueryInterface(IID_IAIMPServiceActionManager, reinterpret_cast<void **>(&manager)))) {
+                AIMPString actionID(L"AIMPYouTubeAction" + (id.empty() ? name : id));
+                actionID->Add(actionName);
+                manager->GetByID(actionID, &newAction);
+                if (newAction) {
+                    newItem->SetValueAsObject(AIMP_MENUITEM_PROPID_ACTION, newAction);
+                    newItem->SetValueAsObject(AIMP_MENUITEM_PROPID_NAME, AIMPString(name));
+                } else {
+                    if (SUCCEEDED(m_core->CreateObject(IID_IAIMPAction, reinterpret_cast<void **>(&newAction)))) {
+                        newAction->SetValueAsObject(AIMP_ACTION_PROPID_ID, actionID);
+                        newAction->SetValueAsObject(AIMP_ACTION_PROPID_GROUPNAME, AIMPString(L"YouTube"));
+
+                        newAction->SetValueAsObject(AIMP_ACTION_PROPID_NAME, actionName);
+                        newAction->SetValueAsObject(AIMP_ACTION_PROPID_EVENT, new ClickHandler(action, newItem));
+                        newAction->SetValueAsInt32(AIMP_ACTION_PROPID_ENABLED, true);
+
+                        m_core->RegisterExtension(IID_IAIMPServiceActionManager, newAction);
+                        newItem->SetValueAsObject(AIMP_MENUITEM_PROPID_ACTION, newAction);
+                        newItem->SetValueAsObject(AIMP_MENUITEM_PROPID_NAME, AIMPString(name));
+
+                        newAction->Release();
                     }
                 }
-                actionName->Add(AIMPString(name));
-
-                newAction->SetValueAsObject(AIMP_ACTION_PROPID_NAME, actionName);
-                newAction->SetValueAsObject(AIMP_ACTION_PROPID_EVENT, new ClickHandler(action, newItem));
-                newAction->SetValueAsInt32(AIMP_ACTION_PROPID_ENABLED, true);
-
-                m_core->RegisterExtension(IID_IAIMPServiceActionManager, newAction);
-                newItem->SetValueAsObject(AIMP_MENUITEM_PROPID_ACTION, newAction);
-                newItem->SetValueAsObject(AIMP_MENUITEM_PROPID_NAME, AIMPString(name));
-
-                newAction->Release();
             }
         } else {
             newItem->SetValueAsObject(AIMP_MENUITEM_PROPID_ID, AIMPString(L"AIMPYouTube" + (id.empty() ? name : id)));

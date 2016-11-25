@@ -661,7 +661,7 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
                  group = GetDlgItem(hwnd, IDC_MONITORGROUPBOX); GetClientRect(group, &rc2); SetWindowPos(group, NULL, 0, 0, rc.right - 21, rc2.bottom, SWP_NOMOVE | SWP_NOZORDER);
             HWND version = GetDlgItem(hwnd, IDC_VERSION);
             GetClientRect(version, &rc2);
-            SetWindowPos(version, NULL, rc.right - 106, rc.bottom - rc2.bottom - 7, 100, rc2.bottom, SWP_NOZORDER);
+            SetWindowPos(version, NULL, rc.right - /*106*/122, rc.bottom - rc2.bottom - 7, /*100*/120, rc2.bottom, SWP_NOZORDER);
 
             HWND manageLink = GetDlgItem(hwnd, IDC_MANAGEEXCLUSIONS);
             GetClientRect(manageLink, &rc2);

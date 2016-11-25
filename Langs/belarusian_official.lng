@@ -1,0 +1,45 @@
+﻿[FILE]
+Author=prydespar
+Name=Беларуская (BE)
+VersionID=0
+LangId=1059
+
+[YouTube]
+ConnectStatusOK=Аўтарызацыя пройдзена|Цяпер можна закрыць гэта акно браўзара і вярнуцца да AIMP.
+ConnectStatusError=Нажаль, адбылася памылка|Не атрымалася падлучыцца да ўліковага запісу YouTube. Калі ласка, вярніцеся на AIMP і паспрабуйце яшчэ раз.
+YouTubeLang=be
+
+[YouTube.Messages]
+Error=Памылка
+CantResolve=Не атрымалася апрацаваць гэты адрас.
+
+[YouTube.Menu]
+AddURL=YouTube URL
+OpenInBrowser=Адкрыць у вэб-браўзеры
+AddToExclusions=Дадаць у спіс выключэнняў
+AddTo=Дадаць у плэйліст
+RemoveFrom=Выдаліць з плэйліста
+CheckForNewItems=Праверыць новыя відэа
+
+[YouTube.AddURL]
+Title=Дадаць YouTube URL
+URL=YouTube URL
+CreateNew=Стварыць новы плэйліст
+OK=OK
+PlaylistName=Назва плэйліста (апцыянальна)
+
+[YouTube.Options]
+Title=YouTube
+Account=Уліковы запіс YouTube
+ConnectButton=аўтарызавацца|выйсці
+General=Галоўнае
+MonitorURLs=Маніторынг дададзеных URL-адрасоў
+MonitorUserPlaylists=Маніторынг плэйлістоў карыстальніка
+CheckAtStartup=Праверка новых трэкаў пры запуску AIMP
+CheckEvery=Праверка новых трэкаў| (Перыяд у гадзінах)
+
+[YouTube.Playlists]
+Favorites=Абранае
+Uploads=Загрузкі
+Likes=Упадабаныя
+WatchLater=Паглядзець пазней

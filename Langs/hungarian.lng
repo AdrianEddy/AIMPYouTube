@@ -1,0 +1,45 @@
+﻿[FILE]
+Author=Sztewe
+Name=Hungarian (hu)
+VersionID=0
+LangId=1038
+
+[YouTube]
+ConnectStatusOK=Hozzáférés megadva!|Most már bezárhatod ezt a böngésző ablakot és visszatérhetsz az AIMP hoz.
+ConnectStatusError=Sajnálom, de hiba történt|Nem tudok csatlakozni a Youtube fiókhoz. Térj vissza az AIMP hoz és próbáld újra
+YouTubeLang=hu
+
+[YouTube.Messages]
+Error=Hiba
+CantResolve=Nem tudtam feloldani a címet.
+
+[YouTube.Menu]
+AddURL=YouTube URL
+OpenInBrowser=Megnyitás böngészőben
+AddToExclusions=Hozzáadás a kivételekhez
+AddTo=Hozzáad
+RemoveFrom=Töröl
+CheckForNewItems=Új videók keresése
+
+[YouTube.AddURL]
+Title=Hozzáadás YouTube URL ből
+URL=YouTube URL
+CreateNew=Új lejátszási lista
+OK=OK
+PlaylistName=Lista neve (opcionális)
+
+[YouTube.Options]
+Title=YouTube
+Account=YouTube fiók
+ConnectButton=Kapcsolódás|Bontás
+General=Általános
+MonitorURLs=Hozzáadott URL-ek figyelése
+MonitorUserPlaylists=Felhasználó listáinak figyelése
+CheckAtStartup=Új számok keresése AIMP indításakor
+CheckEvery=Új számok keresése|óránként
+
+[YouTube.Playlists]
+Favorites=Kedvencek
+Uploads=Feltöltések
+Likes=Lájkok
+WatchLater=Megtekintés később
