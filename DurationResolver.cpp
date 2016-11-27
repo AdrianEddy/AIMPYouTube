@@ -23,6 +23,8 @@ void DurationResolver::AddPlaylist(IAIMPPlaylist *pl) {
                             itm.FileInfo = finfo;
                             itm.Id = ti->Id;
                             m_items.push_back(itm);
+                        } else {
+                            finfo->Release();
                         }
                     }
                     custom->Release();
@@ -84,6 +86,7 @@ void DurationResolver::Resolve() {
 
                                     // It was not released previously on purpose, release it now
                                     finfo->Release();
+                                    (*map)[id] = nullptr;
                                 }
 
                                 if (auto ti = Tools::TrackInfo(id)) {
@@ -93,6 +96,11 @@ void DurationResolver::Resolve() {
                         }
                     }
                 }
+            }
+
+            for (const auto &x : (*map)) {
+                if (x.second)
+                    x.second->Release();
             }
 
             Config::SaveCache();

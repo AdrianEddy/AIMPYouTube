@@ -8,7 +8,9 @@ HRESULT WINAPI ArtworkProvider::Get2(IAIMPFileInfo *FileInfo, IAIMPPropertyList 
 
     IAIMPString *url = nullptr;
     if (SUCCEEDED(FileInfo->GetValueAsObject(AIMP_FILEINFO_PROPID_FILENAME, IID_IAIMPString, reinterpret_cast<void **>(&url)))) {
-        if (auto ti = Tools::TrackInfo(url)) {
+        auto ti = Tools::TrackInfo(url);
+        url->Release();
+        if (ti) {
             if (!ti->Artwork.empty()) {
                 int maxFileSize = 0;
                 if (SUCCEEDED(Options->GetValueAsInt32(AIMP_SERVICE_ALBUMART_PROPID_FIND_IN_INTERNET_MAX_FILE_SIZE, &maxFileSize))) {
@@ -17,7 +19,6 @@ HRESULT WINAPI ArtworkProvider::Get2(IAIMPFileInfo *FileInfo, IAIMPPropertyList 
                 }
             }
         }
-        url->Release();
     }
 
     return E_FAIL;
