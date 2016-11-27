@@ -240,7 +240,9 @@ HRESULT WINAPI Plugin::Finalize() {
         m_playlistManager = nullptr;
     }
 
-    Gdiplus::GdiplusShutdown(m_gdiplusToken);
+    if (m_gdiplusToken)
+        Gdiplus::GdiplusShutdown(m_gdiplusToken);
+
     m_finalized = true;
     return S_OK;
 }

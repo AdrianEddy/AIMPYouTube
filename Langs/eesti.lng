@@ -45,9 +45,9 @@ Likes=Meeldimised
 WatchLater=Vaata hiljem
 
 [YouTube.Exclusions]
-Title=Track exclusions
-Header=Manage track exclusions
-ListHeader=Track title|Duration
-Remove=Remove from exclusions
-RemoveAndAddToPlaylist=Remove from exclusions and add to playlist
+Title=Loo erandid
+Header=Halda loo erandeid
+ListHeader=Loo pealkiri|kestvus
+Remove=Eemalda eranditest
+RemoveAndAddToPlaylist=Eemalda eranditest ja lisa mänguloendisse
 OK=OK
