@@ -1,0 +1,53 @@
+﻿[FILE]
+Author=martinco78
+Name=Slovak (SK)
+VersionID=0
+LangId=1051
+
+[YouTube]
+ConnectStatusOK=Prístup povolený|Teraz môžete zavrieť okno prehliadača a prejsť späť do prehrávača AIMP.
+ConnectStatusError=Prepáčte, došlo ku chybe|Nebolo možné sa pripojiť k Youtube účtu. Prejdite späť do prehrávača AIMP a vyskúšajte to znovu.
+YouTubeLang=sk
+
+[YouTube.Messages]
+Error=Chyba
+CantResolve=Túto URL adresu nie je možné rozpoznať.
+
+[YouTube.Menu]
+AddURL=YouTube URL adresa
+OpenInBrowser=Otvoriť vo webovom prehliadači
+AddToExclusions=Pridať do výnimiek
+AddTo=Pridať do playlistu
+RemoveFrom=Odobrať z playlistu
+CheckForNewItems=Vyhľadať nové videá
+
+[YouTube.AddURL]
+Title=Pridať YouTube URL
+URL=YouTube URL adresa
+CreateNew=Vytvoriť nový playlist
+OK=OK
+PlaylistName=Názov playlistu (voliteľný)
+
+[YouTube.Options]
+Title=YouTube
+Account=YouTube účet
+ConnectButton=Pripojiť|Odpojiť
+General=Všeobecné
+MonitorURLs=Kontrolovať pridané URL adresy
+MonitorUserPlaylists=Kontrolovať playlisty používateľa
+CheckAtStartup=Kontrolovať nové skladby pri spustení prehrávača AIMP
+CheckEvery=Kontrolovať nové skladby každých |hodín
+
+[YouTube.Playlists]
+Favorites=Obľúbené
+Uploads=Nahrané
+Likes=Páči sa
+WatchLater=Pozrieť neskôr
+
+[YouTube.Exclusions]
+Title=Výnimky skladieb
+Header=Spravovať výnimky skladieb
+ListHeader=Názov skladby|Trvanie
+Remove=Odstrániť z výnimiek
+RemoveAndAddToPlaylist=Odstrániť z výnimiek a pridať do playlistu
+OK=OK

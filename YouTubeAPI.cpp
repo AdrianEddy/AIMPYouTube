@@ -514,8 +514,8 @@ void YouTubeAPI::LoadSignatureDecoder() {
                     std::size_t end;
                     if ((end = data.find('(', funcname)) != std::string::npos) {
                         std::string fname(data.substr(funcname, end - funcname));
-                        std::string funcsig = "function " + fname;
-                        std::string funcsig2 = fname + "=function";
+                        std::string funcsig = "function " + fname + "(";
+                        std::string funcsig2 = ";" + fname + "=function";
                         int sigLen = 0;
                         std::size_t funcdef = data.find(funcsig);
                         if (funcdef != std::string::npos) {
