@@ -501,7 +501,7 @@ void YouTubeAPI::LoadSignatureDecoder() {
             std::string player = playerurl;
             Tools::ReplaceString("\\/", "/", player);
             if (player.find("http") == std::string::npos)
-                player = "http:" + player;
+                player = "http://www.youtube.com" + player;
 
             AimpHTTP::Get(Tools::ToWString(player), [](unsigned char *rawData, int size) {
                 std::string data(reinterpret_cast<char *>(rawData), size);
