@@ -1,0 +1,53 @@
+[FILE]
+Author=Bilâl AFŞAR
+Name=Türkçe (TR)
+VersionID=0
+LangId=1055
+
+[YouTube]
+ConnectStatusOK=Yetki verildi|Şimdi bu tarayıcıyı kapatabilir ve AIMP'e dönebilirsiniz.
+ConnectStatusError=Üzgünüm, bir hata meydana geldi|YouTube hesabına bağlanılamadı. Lütfen AIMP'e dönün ve tekrar deneyin.
+YouTubeLang=tr
+
+[YouTube.Messages]
+Error=Hata
+CantResolve=Bu adres (URL) çözülemedi.
+
+[YouTube.Menu]
+AddURL=YouTube Adresi
+OpenInBrowser=İnternet tarayıcısında aç
+AddToExclusions=Hariç tutulanlara ekle
+AddTo=Şuraya ekle:
+RemoveFrom=Şuradan kaldır:
+CheckForNewItems=Yeni videoları kontrol et
+
+[YouTube.AddURL]
+Title=YouTube Adresi Ekle
+URL=YouTube Adresi
+CreateNew=Yeni müzik listesi oluştur
+OK=Tamam
+PlaylistName=Müzik listesi adı (tercihe bağlı)
+
+[YouTube.Options]
+Title=YouTube
+Account=YouTube hesabı
+ConnectButton=Bağlan|Bağlantıyı kes
+General=Umûmi
+MonitorURLs=Takip edilen adresler
+MonitorUserPlaylists=Takip edilen kullanıcı müzik listeleri
+CheckAtStartup=AIMP başladığında yeni parça kontrolü yap
+CheckEvery=Yeni parça kontrolünü her|saatte yap
+
+[YouTube.Playlists]
+Favorites=Beğenilenler
+Uploads=Yüklenenler
+Likes=Hoşlanılanlar
+WatchLater=Daha sonra izle
+
+[YouTube.Exclusions]
+Title=Hariçte tutulan parçalar
+Header=Hariçte olanları yönet
+ListHeader=Parça başlığı|Süre
+Remove=Hariçte tutulanlardan kaldır
+RemoveAndAddToPlaylist=Hariçte tutulanlardan kaldır ve müzik listesine ekle
+OK=Tamam
