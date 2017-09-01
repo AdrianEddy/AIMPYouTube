@@ -43,3 +43,11 @@ Favorites=Favorite
 Uploads=Încărcări
 Likes=Aprecieri
 WatchLater=Vizionează mai târziu
+
+[YouTube.Exclusions]
+Title=Excluderi
+Header=Organizează lista de excluderi
+ListHeader=Nume piesă|Durată
+Remove=Șterge din excluderi
+RemoveAndAddToPlaylist=Șterge și adaugă în playlist
+OK=Bine
