@@ -216,7 +216,7 @@ void AimpHTTP::RawRequestThread(void *args) {
     char buffer[10240];
     ZeroMemory(buffer, sizeof(buffer));
     int dataLen;
-    if ((dataLen = recv(webSocket, buffer, sizeof(buffer), 0) > 0)) {
+    if ((dataLen = recv(webSocket, buffer, sizeof(buffer), 0)) > 0) {
         if (char *body = strstr(buffer, "\r\n\r\n")) {
             body += 4;
             if (callback && m_initialized && Plugin::instance()->core())

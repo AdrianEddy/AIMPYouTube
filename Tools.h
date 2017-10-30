@@ -8,7 +8,7 @@
 #include "rapidjson/document.h"
 
 #define DebugA(...) { char msg[2048]; sprintf_s(msg, __VA_ARGS__); OutputDebugStringA(msg); }
-#define DebugW(...) { wchar_t msg[2048]; StringCchPrintfW(msg, sizeof(msg), __VA_ARGS__); OutputDebugStringW(msg); }
+#define DebugW(...) { wchar_t msg[2048]; StringCchPrintfW(msg, sizeof(msg)/sizeof(wchar_t), __VA_ARGS__); OutputDebugStringW(msg); }
 
 struct Tools {
     static std::wstring ToWString(const std::string &);
