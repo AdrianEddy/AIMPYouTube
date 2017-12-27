@@ -45,9 +45,9 @@ Likes=Videos que me gustaron
 WatchLater=Ver más tarde
 
 [YouTube.Exclusions]
-Title=Track exclusions
-Header=Manage track exclusions
-ListHeader=Track title|Duration
-Remove=Remove from exclusions
-RemoveAndAddToPlaylist=Remove from exclusions and add to playlist
-OK=OK
+Title=Exclusiones de temas
+Header=Administrar exclusiones de temas
+ListHeader=Título|Duración
+Remove=Quitar de las exclusiones
+RemoveAndAddToPlaylist=Quitar de las exclusiones y agregar a la lista de reproducción
+OK=Aceptar

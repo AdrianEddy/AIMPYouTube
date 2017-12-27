@@ -334,11 +334,11 @@ void YouTubeAPI::ResolveUrl(const std::wstring &url, const std::wstring &playlis
         if (createPlaylist) {
             finalPlaylistName = playlistTitle.empty() ? plName : playlistTitle;
             pl = Plugin::instance()->GetPlaylist(finalPlaylistName);
-            if (!pl) 
+            if (!pl)
                 return;
         } else {
             pl = Plugin::instance()->GetCurrentPlaylist();
-            if (!pl) 
+            if (!pl)
                 return;
         }
 
@@ -492,7 +492,7 @@ std::wstring YouTubeAPI::GetStreamUrl(const std::wstring &id) {
 void YouTubeAPI::LoadSignatureDecoder() {
     // TODO: http://en.cppreference.com/w/cpp/regex/regex_match
 
-    std::wstring ua(L"Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36");
+    std::wstring ua(L"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3304.0 Safari/537.36");
     AimpHTTP::Get(L"https://www.youtube.com/\r\nUser-Agent: " + ua, [](unsigned char *data, int size) {
         if (char *playerurl = strstr((char *)data, "\"js\":\"")) {
             playerurl += 6;
@@ -501,7 +501,9 @@ void YouTubeAPI::LoadSignatureDecoder() {
             std::string player = playerurl;
             Tools::ReplaceString("\\/", "/", player);
             if (player.find("http") == std::string::npos)
-                player = "http://www.youtube.com" + player;
+                player = "https://www.youtube.com" + player;
+
+			player += "\r\nAccept-Encoding: gzip;q=0,deflate;q=0,identity";
 
             AimpHTTP::Get(Tools::ToWString(player), [](unsigned char *rawData, int size) {
                 std::string data(reinterpret_cast<char *>(rawData), size);
@@ -514,6 +516,15 @@ void YouTubeAPI::LoadSignatureDecoder() {
                     std::size_t end;
                     if ((end = data.find('(', funcname)) != std::string::npos) {
                         std::string fname(data.substr(funcname, end - funcname));
+                        if (fname.find(')') != std::string::npos) {
+                            if ((funcname = data.find(".set(\"signature\",", funcname)) != std::string::npos) {
+                                funcname += 17;
+                                std::size_t end;
+                                if ((end = data.find('(', funcname)) != std::string::npos) {
+                                    fname = std::string(data.substr(funcname, end - funcname));
+                                }
+                            }
+                        }
                         std::string funcsig = "function " + fname + "(";
                         std::string funcsig2 = ";" + fname + "=function";
                         int sigLen = 0;
@@ -528,7 +539,7 @@ void YouTubeAPI::LoadSignatureDecoder() {
                             size_t mutatorObject = data.find("split(\"\");", funcdef) + 10;
                             std::string mutatorObjectName(data.substr(mutatorObject, data.find('.', mutatorObject) - mutatorObject));
                             mutatorObjectName = "var " + mutatorObjectName + "=";
-                            
+
                             size_t mutatorObjectStart;
                             if ((mutatorObjectStart = data.find(mutatorObjectName)) != std::string::npos) {
                                 mutatorObjectStart += mutatorObjectName.length() + 1;
@@ -551,7 +562,8 @@ void YouTubeAPI::LoadSignatureDecoder() {
                                         mutators[name] = [](std::string &s, int param) { std::reverse(s.begin(), s.end()); };
                                 });
 
-                                Tools::SplitString(data.substr(funcdef, end - funcdef), ";", [&](std::string token) {
+                                std::string sstr(data.substr(funcdef, end - funcdef));
+                                Tools::SplitString(sstr, ";", [&](std::string token) {
                                     token = Tools::Trim(token);
                                     if (token.find("split") != std::string::npos || token.find("return") != std::string::npos)
                                         return;
