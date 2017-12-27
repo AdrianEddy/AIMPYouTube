@@ -45,9 +45,9 @@ Likes=Понравившиеся
 WatchLater=Посмотреть позже
 
 [YouTube.Exclusions]
-Title=Track exclusions
-Header=Manage track exclusions
-ListHeader=Track title|Duration
-Remove=Remove from exclusions
-RemoveAndAddToPlaylist=Remove from exclusions and add to playlist
+Title=Управление исключёнными треками
+Header=Исключённые треки
+ListHeader=Заголовок трека|Длительность
+Remove=Удалить из исключений
+RemoveAndAddToPlaylist=Удалить из исключений и добавить в плейлист
 OK=OK
