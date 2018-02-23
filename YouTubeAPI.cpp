@@ -59,6 +59,8 @@ void YouTubeAPI::AddFromJson(IAIMPPlaylist *playlist, const rapidjson::Value &d,
                 state->PlaylistToUpdate->Items.insert(trackId);
             }
 
+            auto permalink = L"https://www.youtube.com/watch?v=" + trackId;
+
             std::wstring filename(L"youtube://");
             filename += trackId + L"/";
             filename += final_title;
@@ -71,6 +73,7 @@ void YouTubeAPI::AddFromJson(IAIMPPlaylist *playlist, const rapidjson::Value &d,
             if (item.HasMember("channelTitle") && (state->Flags & LoadingState::AddChannelTitle)) {
                 file_info->SetValueAsObject(AIMP_FILEINFO_PROPID_ARTIST, AIMPString(item["channelTitle"]));
             }
+            file_info->SetValueAsObject(AIMP_FILEINFO_PROPID_URL, AIMPString(permalink));
 
             int64_t videoDuration = 0;
             if (contentDetails.IsObject() && contentDetails.HasMember("duration")) {
@@ -96,7 +99,6 @@ void YouTubeAPI::AddFromJson(IAIMPPlaylist *playlist, const rapidjson::Value &d,
                 artwork = Tools::ToWString(item["thumbnails"]["high"]["url"]);
             }
 
-            auto permalink = L"https://www.youtube.com/watch?v=" + trackId;
 
             Config::TrackInfos[trackId] = Config::TrackInfo(final_title, trackId, permalink, artwork, videoDuration);
 
@@ -159,7 +161,14 @@ void YouTubeAPI::LoadFromUrl(std::wstring url, IAIMPPlaylist *playlist, std::sha
             std::wstring userName = Tools::ToWString(d["items"][0]["snippet"]["localized"]["title"]);
             IAIMPPropertyList *plProp = nullptr;
             if (SUCCEEDED(playlist->QueryInterface(IID_IAIMPPropertyList, reinterpret_cast<void **>(&plProp)))) {
-                plProp->SetValueAsObject(AIMP_PLAYLIST_PROPID_NAME, AIMPString(userName));
+                bool isRenamed = true;
+                IAIMPString *str = nullptr;
+                if (SUCCEEDED(plProp->GetValueAsObject(AIMP_PLAYLIST_PROPID_NAME, IID_IAIMPString, reinterpret_cast<void **>(&str)))) {
+                    isRenamed = wcscmp(L"YouTube", str->GetData());
+                    str->Release();
+                }
+                if (!isRenamed)
+                    plProp->SetValueAsObject(AIMP_PLAYLIST_PROPID_NAME, AIMPString(userName));
                 plProp->Release();
             }
             state->ReferenceName = userName;
@@ -490,10 +499,15 @@ std::wstring YouTubeAPI::GetStreamUrl(const std::wstring &id) {
 }
 
 void YouTubeAPI::LoadSignatureDecoder() {
-    // TODO: http://en.cppreference.com/w/cpp/regex/regex_match
+    static std::map<std::string, std::function<void(std::string &s, int param)>> mutatorTypes {
+        { "swap",    [](std::string &s, int param) { std::swap(s[0], s[param]);        } },
+        { "erase",   [](std::string &s, int param) { s.erase(0, param);                } },
+        { "reverse", [](std::string &s, int param) { std::reverse(s.begin(), s.end()); } },
+    };
 
-    std::wstring ua(L"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3304.0 Safari/537.36");
-    AimpHTTP::Get(L"https://www.youtube.com/\r\nUser-Agent: " + ua, [](unsigned char *data, int size) {
+    // TODO: http://en.cppreference.com/w/cpp/regex/regex_match
+    std::wstring ua(L"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3353.0 Safari/537.36");
+    AimpHTTP::Get(L"https://www.youtube.com/\r\nUser-Agent: " + ua, [&](unsigned char *data, int size) {
         if (char *playerurl = strstr((char *)data, "\"js\":\"")) {
             playerurl += 6;
             if (char *end = strchr(playerurl, '"'))
@@ -503,21 +517,21 @@ void YouTubeAPI::LoadSignatureDecoder() {
             if (player.find("http") == std::string::npos)
                 player = "https://www.youtube.com" + player;
 
-			player += "\r\nAccept-Encoding: gzip;q=0,deflate;q=0,identity";
+            player += "\r\nAccept-Encoding: gzip;q=0,deflate;q=0,identity";
 
-            AimpHTTP::Get(Tools::ToWString(player), [](unsigned char *rawData, int size) {
+            AimpHTTP::Get(Tools::ToWString(player), [&](unsigned char *rawData, int size) {
                 std::string data(reinterpret_cast<char *>(rawData), size);
                 Tools::ReplaceString("\n", "", data);
                 Tools::ReplaceString("\r", "", data);
 
                 std::size_t funcname;
-                if ((funcname = data.find(".set(\"signature\",")) != std::string::npos) {
-                    funcname += 17;
+                if ((funcname = data.find("\"signature\",")) != std::string::npos) {
+                    funcname += 12;
                     std::size_t end;
                     if ((end = data.find('(', funcname)) != std::string::npos) {
                         std::string fname(data.substr(funcname, end - funcname));
                         if (fname.find(')') != std::string::npos) {
-                            if ((funcname = data.find(".set(\"signature\",", funcname)) != std::string::npos) {
+                            if ((funcname = data.find("\"signature\",", funcname)) != std::string::npos) {
                                 funcname += 17;
                                 std::size_t end;
                                 if ((end = data.find('(', funcname)) != std::string::npos) {
@@ -547,19 +561,14 @@ void YouTubeAPI::LoadSignatureDecoder() {
                                 end = data.find("join(\"\")", funcdef);
                                 funcdef += sigLen;
 
-                                std::map<std::string, std::function<void(std::string &s, int param)>> mutators;
+                                std::map<std::string, std::string> mutators;
                                 std::string mutStr = data.substr(mutatorObjectStart, mutatorObjectEnd - mutatorObjectStart);
                                 Tools::SplitString(mutStr, "},", [&](std::string token) {
                                     token = Tools::Trim(token);
                                     std::string name(token.substr(0, 2));
-                                    if (token.find("var ") != std::string::npos)
-                                        mutators[name] = [](std::string &s, int param) { std::swap(s[0], s[param]); };
-
-                                    if (token.find("splice") != std::string::npos)
-                                        mutators[name] = [](std::string &s, int param) { s.erase(0, param); };
-
-                                    if (token.find("reverse") != std::string::npos)
-                                        mutators[name] = [](std::string &s, int param) { std::reverse(s.begin(), s.end()); };
+                                    if (token.find("var ")    != std::string::npos) mutators[name] = "swap";
+                                    if (token.find("splice")  != std::string::npos) mutators[name] = "erase";
+                                    if (token.find("reverse") != std::string::npos) mutators[name] = "reverse";
                                 });
 
                                 std::string sstr(data.substr(funcdef, end - funcdef));
@@ -573,7 +582,10 @@ void YouTubeAPI::LoadSignatureDecoder() {
                                         if (char *end = strchr(params, ')')) *end = 0;
                                         int param = std::stoi(params + 1);
                                         if (mutators.find(mutator) != mutators.end()) {
-                                            YouTubeAPI::SigDecoder.push_back({ mutators[mutator], param });
+                                            DebugA("\t['%s', %d],\n", mutators[mutator].c_str(), param);
+                                            if (mutatorTypes.find(mutators[mutator]) != mutatorTypes.end()) {
+                                                YouTubeAPI::SigDecoder.push_back({ mutatorTypes[mutators[mutator]], param });
+                                            }
                                         } else {
                                             DebugA("Unknown mutator: %s\n", mutator.c_str());
                                         }
@@ -586,6 +598,23 @@ void YouTubeAPI::LoadSignatureDecoder() {
             }, true);
         }
     }, true);
+
+    if (YouTubeAPI::SigDecoder.empty()) {
+        AimpHTTP::Get(L"http://eddy.cx/dev/ytsig.php", [&](unsigned char *data, int size) {
+            rapidjson::Document d;
+            d.Parse(reinterpret_cast<const char *>(data));
+
+            if (d.IsArray() && d.Size() > 0) {
+                for (auto i = d.Begin(), e = d.End(); i != e; i++) {
+                    const auto &x = *i;
+                    if (!x.IsArray() || x.Size() != 2)
+                        continue;
+
+                    YouTubeAPI::SigDecoder.push_back({ mutatorTypes[x[0].GetString()], x[1].GetInt() });
+                }
+            }
+        }, true);
+    }
 }
 
 void YouTubeAPI::AddToPlaylist(Config::Playlist &pl, const std::wstring &trackId) {

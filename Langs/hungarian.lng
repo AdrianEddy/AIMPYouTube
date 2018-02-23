@@ -43,3 +43,11 @@ Favorites=Kedvencek
 Uploads=Feltöltések
 Likes=Lájkok
 WatchLater=Megtekintés később
+
+[YouTube.Exclusions]
+Title=Szám-Kivételek
+Header=Szám-Kivételek kezelése
+ListHeader=Szám Címe|Hossza
+Remove=Eltávolítás a Kivételekből
+RemoveAndAddToPlaylist=Eltávolítás a kivételekből és lejátszási listához adni
+OK=OK
