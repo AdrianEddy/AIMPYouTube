@@ -1,0 +1,53 @@
+﻿[FILE]
+Author=VenusGirl VenusGirl@outlook.com
+Name=Korea (KR)
+VersionID=0
+LangId=1042
+
+[YouTube]
+ConnectStatusOK=권한 부여|이제이 브라우저 창을 닫고 AIMP로 돌아갈 수 있습니다.
+ConnectStatusError=죄송합니다. 오류가 발생했습니다|YouTube 계정에 연결할 수 없습니다. AIMP로 돌아가서 다시 시도하십시오.
+YouTubeLang=en
+
+[YouTube.Messages]
+Error=오류
+CantResolve=이 URL을 해결할 수 없습니다.
+
+[YouTube.Menu]
+AddURL=YouTube URL
+OpenInBrowser=웹 브라우저에서 열기
+AddToExclusions=제외에 추가
+AddTo=추가
+RemoveFrom=제거
+CheckForNewItems=새 동영상 확인
+
+[YouTube.AddURL]
+Title=YouTube URL 추가
+URL=YouTube URL
+CreateNew=새 재생 목록 만들기
+OK=확인
+PlaylistName=재생 목록 이름 (옵션)
+
+[YouTube.Options]
+Title=YouTube
+Account=YouTube 계정
+ConnectButton=연결|연결 해제
+General=일반
+MonitorURLs=추가된 URL 모니터링
+MonitorUserPlaylists=사용자의 재생 목록 모니터링
+CheckAtStartup=AIMP 시작시 새 트랙 확인
+CheckEvery=매번 새로운 트랙 확인|시간
+
+[YouTube.Playlists]
+Favorites=즐겨찾기
+Uploads=업로드
+Likes=좋아요
+WatchLater=나중에
+
+[YouTube.Exclusions]
+Title=제외 트랙
+Header=제외 트랙 관리
+ListHeader=트랙 제목|재생 시간
+Remove=제외 항목에서 삭제
+RemoveAndAddToPlaylist=제외 항목에서 삭제하고 재생 목록에 추가
+OK=확인
