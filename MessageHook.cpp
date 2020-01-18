@@ -7,11 +7,11 @@
 #include "YouTubeAPI.h"
 
 MessageHook::MessageHook(Plugin *pl) : m_plugin(pl) {
-    
+
 }
 
 MessageHook::~MessageHook() {
-    
+
 }
 
 void WINAPI MessageHook::CoreMessage(DWORD AMessage, int AParam1, void *AParam2, HRESULT *AResult) {
@@ -78,7 +78,7 @@ void WINAPI MessageHook::CoreMessage(DWORD AMessage, int AParam1, void *AParam2,
     if (AMessage == AIMP_MSG_CMD_BOOKMARKS_ADD) {
         IAIMPString *url = nullptr;
         IAIMPPlaylistItem *currentTrack = m_plugin->GetCurrentTrack();
-        if (SUCCEEDED(currentTrack->GetValueAsObject(AIMP_PLAYLISTITEM_PROPID_FILENAME, IID_IAIMPString, reinterpret_cast<void **>(&url)))) {
+        if (currentTrack && SUCCEEDED(currentTrack->GetValueAsObject(AIMP_PLAYLISTITEM_PROPID_FILENAME, IID_IAIMPString, reinterpret_cast<void **>(&url)))) {
             std::wstring id = Tools::TrackIdFromUrl(url->GetData());
             url->Release();
             currentTrack->Release();
@@ -96,7 +96,7 @@ void WINAPI MessageHook::CoreMessage(DWORD AMessage, int AParam1, void *AParam2,
 
 #if 0
 #   define STRINGIFY(name) case name: DebugA(#name " %d %d\n", AParam1, AParam2); break;
-    
+
     switch (AMessage) {
         STRINGIFY(AIMP_MSG_CMD_BASE)
         STRINGIFY(AIMP_MSG_CMD_STATE_GET)

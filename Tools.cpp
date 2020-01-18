@@ -133,6 +133,19 @@ std::wstring Tools::TrackIdFromUrl(const std::wstring &url) {
     return id;
 }
 
+std::string Tools::FindBetween(const std::string &s, const char *from, const char *to, int offset) {
+    std::size_t pos, pos2;
+    std::size_t fl = strlen(from);
+    if ((pos = s.find(from, offset)) != std::string::npos) {
+        if (to && (pos2 = s.find(to, pos + fl)) != std::string::npos) {
+            return s.substr(pos + fl, pos2 - pos - fl);
+        } else {
+            return s.substr(pos + fl);
+        }
+    }
+    return std::string();
+}
+
 void Tools::ReplaceString(const std::string &search, const std::string &replace, std::string &subject) {
     size_t pos = 0;
     while ((pos = subject.find(search, pos)) != std::string::npos) {

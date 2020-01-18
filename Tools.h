@@ -16,6 +16,7 @@ struct Tools {
     static std::wstring ToWString(const char *);
     static std::wstring ToWString(const rapidjson::Value &);
 
+    static std::string FindBetween(const std::string &s, const char *from, const char *to = nullptr, int offset = 0);
     static void ReplaceString(const std::string &search, const std::string &replace, std::string &subject);
     static void SplitString(const std::string &string, const std::string &delimiter, std::function<void(const std::string &token)> callback);
     static  std::string Trim(const std::string &s);

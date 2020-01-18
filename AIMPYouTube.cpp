@@ -124,7 +124,7 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
         Finalize();
         return E_FAIL;
     }
- 
+
     if (FAILED(m_core->RegisterExtension(IID_IAIMPServicePlaylistManager, new PlaylistListener()))) {
         Finalize();
         return E_FAIL;
@@ -371,7 +371,7 @@ void Plugin::ForSelectedTracks(std::function<int(IAIMPPlaylist *, IAIMPPlaylistI
                         if (SUCCEEDED(item->GetValueAsObject(AIMP_PLAYLISTITEM_PROPID_FILENAME, IID_IAIMPString, reinterpret_cast<void **>(&url)))) {
                             std::wstring id = Tools::TrackIdFromUrl(url->GetData());
                             url->Release();
-                            
+
                             int result = callback(pl, item, id);
                             if (result & FLAG_DELETE_ITEM) {
                                 to_del.insert(item);
@@ -489,7 +489,7 @@ void Plugin::UpdatePlaylistMenu() {
                                 d->Release();
                             });
                         });
-                        
+
                     });
                     return;
                 }

@@ -14,6 +14,7 @@
 #include <map>
 #include <regex>
 
+extern DWORD g_MainThreadId;
 YouTubeAPI::DecoderMap YouTubeAPI::SigDecoder;
 
 void YouTubeAPI::AddFromJson(IAIMPPlaylist *playlist, const rapidjson::Value &d, std::shared_ptr<LoadingState> state) {
@@ -164,7 +165,7 @@ void YouTubeAPI::LoadFromUrl(std::wstring url, IAIMPPlaylist *playlist, std::sha
                 bool isRenamed = true;
                 IAIMPString *str = nullptr;
                 if (SUCCEEDED(plProp->GetValueAsObject(AIMP_PLAYLIST_PROPID_NAME, IID_IAIMPString, reinterpret_cast<void **>(&str)))) {
-                    isRenamed = wcscmp(L"YouTube", str->GetData());
+                    isRenamed = wcscmp(L"YouTube", str->GetData()) != 0;
                     str->Release();
                 }
                 if (!isRenamed)
@@ -406,26 +407,22 @@ void YouTubeAPI::ResolveUrl(const std::wstring &url, const std::wstring &playlis
         }
         return;
     }
-
-    MessageBox(Plugin::instance()->GetMainWindowHandle(), Plugin::instance()->Lang(L"YouTube.Messages\\CantResolve").c_str(), Plugin::instance()->Lang(L"YouTube.Messages\\Error").c_str(), MB_OK | MB_ICONERROR);
+    if (g_MainThreadId == GetCurrentThreadId())
+        MessageBox(Plugin::instance()->GetMainWindowHandle(), Plugin::instance()->Lang(L"YouTube.Messages\\CantResolve").c_str(), Plugin::instance()->Lang(L"YouTube.Messages\\Error").c_str(), MB_OK | MB_ICONERROR);
 }
 
 std::wstring YouTubeAPI::GetStreamUrl(const std::wstring &id) {
     std::wstring stream_url;
-    std::wstring url2(L"http://www.youtube.com/get_video_info?video_id=" + id + L"&el=detailpage&sts=16511");
+    std::wstring url2(L"https://www.youtube.com/get_video_info?video_id=" + id + L"&el=detailpage&sts=16511");
     AimpHTTP::Get(url2, [&](unsigned char *data, int size) {
-        if (char *streams = strstr((char *)data, "url_encoded_fmt_stream_map=")) {
-            streams += 27;
+        if (char *streams = strstr((char *)data, "player_response=")) {
+            streams += 16;
             if (char *end = strchr(streams, '&'))
                 *end = 0;
-            std::string map = Tools::UrlDecode(streams);
-            Tools::ReplaceString(",", "\"},{\"", map);
-            Tools::ReplaceString("&", "\",\"", map);
-            Tools::ReplaceString("=", "\":\"", map);
-            map = "[{\"" + map + "\"}]";
+            std::string json = Tools::UrlDecode(streams);
 
             rapidjson::Document d;
-            d.Parse(map.c_str());
+            d.Parse(json.c_str());
 
             std::vector<int> streamPriority = {
                 // Audio first
@@ -454,26 +451,40 @@ std::wstring YouTubeAPI::GetStreamUrl(const std::wstring &id) {
 
             std::wstring medium_stream;
 
-            if (d.IsArray()) {
-                for (auto x = d.Begin(), e = d.End(); x != e; x++) {
+            if (d.HasMember("streamingData") && d["streamingData"].IsObject() && d["streamingData"].HasMember("formats") && d["streamingData"]["formats"].IsArray()) {
+                const rapidjson::Value &formats = d["streamingData"]["formats"].GetArray();
+
+                for (auto x = formats.Begin(), e = formats.End(); x != e; x++) {
                     const rapidjson::Value &px = *x;
                     if (!px.IsObject())
                         continue;
 
-                    std::string stream = Tools::UrlDecode(px["url"].GetString());
-                    if (px.HasMember("s")) {
-                        std::string s = px["s"].GetString();
-                        YouTubeAPI::DecodeSignature(s);
-                        stream += "&signature=" + s;
+                    std::string stream;
+                    if (px.HasMember("url")) stream = px["url"].GetString();
+                    if (stream.empty() && px.HasMember("cipher")) {
+                        std::string cipher = px["cipher"].GetString();
+
+                        stream = Tools::UrlDecode(Tools::FindBetween(cipher, "url=", "&"));
+                        std::string s = Tools::UrlDecode(Tools::FindBetween(cipher, "s=", "&"));
+                        std::string sp = Tools::UrlDecode(Tools::FindBetween(cipher, "sp=", "&"));
+                        std::string sig = Tools::UrlDecode(Tools::FindBetween(cipher, "sig=", "&"));
+
+                        if (sp.empty()) sp = "signature";
+
+                        if (!s.empty()) {
+                            YouTubeAPI::DecodeSignature(s);
+                        } else if (!sig.empty()) s = sig;
+
+                        stream += "&" + sp + "=" + s;
                     }
                     std::wstring wstream = Tools::ToWString(stream);
 
-                    if (px.HasMember("itag")) {
-                        int itag = std::stoi(px["itag"].GetString());
+                    if (px.HasMember("itag") && px["itag"].IsInt()) {
+                        int itag = px["itag"].GetInt();
                         urls[itag] = wstream;
                     }
 
-                    if (px.HasMember("quality") && strcmp(px["quality"].GetString(), "medium") == 0 && !px.HasMember("stereo3d") && strstr(px["type"].GetString(), "mp4") != nullptr) {
+                    if (px.HasMember("audioQuality") && strcmp(px["audioQuality"].GetString(), "AUDIO_QUALITY_MEDIUM") == 0) {
                         medium_stream = wstream;
                     }
                 }
@@ -505,14 +516,10 @@ void YouTubeAPI::LoadSignatureDecoder() {
         { "reverse", [](std::string &s, int param) { std::reverse(s.begin(), s.end()); } },
     };
 
-    // TODO: http://en.cppreference.com/w/cpp/regex/regex_match
     std::wstring ua(L"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3353.0 Safari/537.36");
-    AimpHTTP::Get(L"https://www.youtube.com/\r\nUser-Agent: " + ua, [&](unsigned char *data, int size) {
-        if (char *playerurl = strstr((char *)data, "\"js\":\"")) {
-            playerurl += 6;
-            if (char *end = strchr(playerurl, '"'))
-                *end = 0;
-            std::string player = playerurl;
+    AimpHTTP::Get(L"https://www.youtube.com/\r\nUser-Agent: " + ua, [&](unsigned char *data1, int) {
+        std::string player = Tools::FindBetween((char *)data1, "\"js\":\"", "\"");
+        if (!player.empty()) {
             Tools::ReplaceString("\\/", "/", player);
             if (player.find("http") == std::string::npos)
                 player = "https://www.youtube.com" + player;
@@ -524,74 +531,58 @@ void YouTubeAPI::LoadSignatureDecoder() {
                 Tools::ReplaceString("\n", "", data);
                 Tools::ReplaceString("\r", "", data);
 
-                std::size_t funcname;
-                if ((funcname = data.find("\"signature\",")) != std::string::npos) {
-                    funcname += 12;
-                    std::size_t end;
-                    if ((end = data.find('(', funcname)) != std::string::npos) {
-                        std::string fname(data.substr(funcname, end - funcname));
-                        if (fname.find(')') != std::string::npos) {
-                            if ((funcname = data.find("\"signature\",", funcname)) != std::string::npos) {
-                                funcname += 17;
-                                std::size_t end;
-                                if ((end = data.find('(', funcname)) != std::string::npos) {
-                                    fname = std::string(data.substr(funcname, end - funcname));
-                                }
-                            }
-                        }
-                        std::string funcsig = "function " + fname + "(";
-                        std::string funcsig2 = ";" + fname + "=function";
-                        int sigLen = 0;
-                        std::size_t funcdef = data.find(funcsig);
-                        if (funcdef != std::string::npos) {
-                            sigLen = funcsig.size() + 4;
-                        } else {
-                            funcdef = data.find(funcsig2);
-                            sigLen = funcsig2.size() + 4;
-                        }
-                        if (funcdef != std::string::npos) {
-                            size_t mutatorObject = data.find("split(\"\");", funcdef) + 10;
-                            std::string mutatorObjectName(data.substr(mutatorObject, data.find('.', mutatorObject) - mutatorObject));
-                            mutatorObjectName = "var " + mutatorObjectName + "=";
+                // Taken from youtube-dl
+                // https://github.com/ytdl-org/youtube-dl/blob/c968f738df8e21d7a7f2f86f697207e0476b76ef/youtube_dl/extractor/youtube.py#L1342
+                std::vector<std::regex> patterns {
+                    std::regex(R"PATTERN(\b[cs]\s*&&\s*[adf]\.set\([^,]+\s*,\s*encodeURIComponent\s*\(\s*([a-zA-Z0-9$]+)\()PATTERN"),
+                    std::regex(R"PATTERN(\b[a-zA-Z0-9]+\s*&&\s*[a-zA-Z0-9]+\.set\([^,]+\s*,\s*encodeURIComponent\s*\(\s*([a-zA-Z0-9$]+)\()PATTERN"),
+                    std::regex(R"PATTERN(([a-zA-Z0-9$]+)\s*=\s*function\(\s*a\s*\)\s*\{\s*a\s*=\s*a\.split\(\s*""\s*\))PATTERN")
+                };
+                std::smatch m;
+                std::string funcsig;
+                for (const auto &x : patterns) {
+                    if (std::regex_search(data, m, x)) {
+                        funcsig = ";" + m[1].str() + "=function";
+                        break;
+                    }
+                }
 
-                            size_t mutatorObjectStart;
-                            if ((mutatorObjectStart = data.find(mutatorObjectName)) != std::string::npos) {
-                                mutatorObjectStart += mutatorObjectName.length() + 1;
-                                size_t mutatorObjectEnd = data.find("};", mutatorObjectStart);
-                                end = data.find("join(\"\")", funcdef);
-                                funcdef += sigLen;
+                if (!funcsig.empty()) {
+                    std::string sstr = Tools::FindBetween(data, funcsig.c_str(), "join(\"\")");
+                    if (sstr.size() > 5) {
+                        sstr.erase(0, 4);
+                        std::string mutatorObjectName = "var " + Tools::FindBetween(sstr, "split(\"\");", ".") + "={";
+                        std::string mutStr = Tools::FindBetween(data, mutatorObjectName.c_str(), "};");
 
-                                std::map<std::string, std::string> mutators;
-                                std::string mutStr = data.substr(mutatorObjectStart, mutatorObjectEnd - mutatorObjectStart);
-                                Tools::SplitString(mutStr, "},", [&](std::string token) {
-                                    token = Tools::Trim(token);
-                                    std::string name(token.substr(0, 2));
-                                    if (token.find("var ")    != std::string::npos) mutators[name] = "swap";
-                                    if (token.find("splice")  != std::string::npos) mutators[name] = "erase";
-                                    if (token.find("reverse") != std::string::npos) mutators[name] = "reverse";
-                                });
+                        if (!mutStr.empty()) {
+                            std::map<std::string, std::string> mutators;
+                            Tools::SplitString(mutStr, "},", [&](std::string token) {
+                                token = Tools::Trim(token);
+                                std::string name(token.substr(0, 2));
+                                if (token.find("var ")    != std::string::npos) mutators[name] = "swap";
+                                if (token.find("splice")  != std::string::npos) mutators[name] = "erase";
+                                if (token.find("reverse") != std::string::npos) mutators[name] = "reverse";
+                            });
 
-                                std::string sstr(data.substr(funcdef, end - funcdef));
-                                Tools::SplitString(sstr, ";", [&](std::string token) {
-                                    token = Tools::Trim(token);
-                                    if (token.find("split") != std::string::npos || token.find("return") != std::string::npos)
-                                        return;
+                            Tools::SplitString(sstr, ";", [&](std::string token) {
+                                token = Tools::Trim(token);
+                                if (token.find("split") != std::string::npos || token.find("return") != std::string::npos)
+                                    return;
 
-                                    std::string mutator(token.substr(3, 2));
-                                    if (char *params = strchr((char *)token.c_str(), ',')) {
-                                        if (char *end = strchr(params, ')')) *end = 0;
-                                        int param = std::stoi(params + 1);
-                                        if (mutators.find(mutator) != mutators.end()) {
-                                            DebugA("\t['%s', %d],\n", mutators[mutator].c_str(), param);
-                                            if (mutatorTypes.find(mutators[mutator]) != mutatorTypes.end()) {
-                                                YouTubeAPI::SigDecoder.push_back({ mutatorTypes[mutators[mutator]], param });
-                                            }
-                                        } else {
-                                            DebugA("Unknown mutator: %s\n", mutator.c_str());
+                                std::string mutator(token.substr(3, 2));
+                                if (char *params = strchr((char *)token.c_str(), ',')) {
+                                    if (char *end = strchr(params, ')')) *end = 0;
+                                    int param = std::stoi(params + 1);
+                                    if (mutators.find(mutator) != mutators.end()) {
+                                        DebugA("\t['%s', %d],\n", mutators[mutator].c_str(), param);
+                                        if (mutatorTypes.find(mutators[mutator]) != mutatorTypes.end()) {
+                                            YouTubeAPI::SigDecoder.push_back({ mutatorTypes[mutators[mutator]], param });
                                         }
+                                    } else {
+                                        DebugA("Unknown mutator: %s\n", mutator.c_str());
                                     }
-                                });
-                            }
+                                }
+                            });
                         }
                     }
                 }
