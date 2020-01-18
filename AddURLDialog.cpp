@@ -19,7 +19,10 @@ BOOL CALLBACK AddURLDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM l
             EndDialog(hwnd, IDCANCEL);
         break;
         case WM_INITDIALOG: {
-            SendDlgItemMessage(hwnd, IDC_CREATENEW, BM_SETCHECK, BST_CHECKED, NULL);
+            int createNew = Config::GetInt32(L"CreateNewPlaylist", 1);
+            SendDlgItemMessage(hwnd, IDC_CREATENEW, BM_SETCHECK, createNew? BST_CHECKED : BST_UNCHECKED, NULL);
+            EnableWindow(GetDlgItem(hwnd, IDC_PLAYLISTTITLE), createNew);
+            EnableWindow(GetDlgItem(hwnd, IDC_PLAYLISTTITLECAPTION), createNew);
             GdiPlusImageLoader icon(IDB_ICON, L"PNG");
             HICON bitmap;
             icon->GetHICON(&bitmap);
@@ -44,6 +47,7 @@ BOOL CALLBACK AddURLDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM l
                     std::wstring playlistTitle(buf);
 
                     bool createnew = SendDlgItemMessage(hwnd, IDC_CREATENEW, BM_GETCHECK, NULL, NULL) == BST_CHECKED;
+                    Config::SetInt32(L"CreateNewPlaylist", createnew);
 
                     if (!url.empty()) {
                         YouTubeAPI::ResolveUrl(url, playlistTitle, createnew);
