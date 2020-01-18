@@ -1,4 +1,5 @@
 #include "Tools.h"
+#include "AIMPYouTube.h"
 
 #include <windows.h>
 #include <locale>
@@ -9,6 +10,7 @@
 #include <string>
 #include <algorithm>
 
+extern DWORD g_MainThreadId;
 static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> wStrConverter;
 
 std::wstring Tools::ToWString(const std::string &string) {
@@ -31,7 +33,7 @@ std::string Tools::ToString(const std::wstring &string) {
     return wStrConverter.to_bytes(string);
 }
 
-void Tools::OutputLastError() {
+void Tools::OutputLastError(std::wstring *out) {
     DWORD errorMessageID = ::GetLastError();
     if (errorMessageID == 0)
         return;
@@ -41,8 +43,20 @@ void Tools::OutputLastError() {
                                 NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR)&messageBuffer, 0, NULL);
 
     DebugW(L"0x%x: %s", errorMessageID, messageBuffer);
+    if (out)
+        *out = messageBuffer;
 
     LocalFree(messageBuffer);
+}
+
+void Tools::ShowLastError(std::wstring message) {
+    std::wstring error;
+    OutputLastError(&error);
+    if (!error.empty())
+        message += L" - " + error;
+
+    if (g_MainThreadId == GetCurrentThreadId())
+        MessageBox(Plugin::instance()->GetMainWindowHandle(), message.c_str(), Plugin::instance()->Lang(L"YouTube.Messages\\Error").c_str(), MB_OK | MB_ICONERROR);
 }
 
 std::wstring Tools::UrlEncode(const std::wstring &url) {

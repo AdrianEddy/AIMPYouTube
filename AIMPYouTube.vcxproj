@@ -107,6 +107,7 @@
     <ClInclude Include="TcpServer.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Tools.h" />
+    <ClInclude Include="YouTubeDL.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AddURLDialog.cpp" />
@@ -135,6 +136,7 @@
     <ClCompile Include="TcpServer.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Tools.cpp" />
+    <ClCompile Include="YouTubeDL.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AIMPYouTube.def" />

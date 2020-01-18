@@ -8,6 +8,7 @@
 #include "DurationResolver.h"
 #include "Tools.h"
 #include "Timer.h"
+#include "YouTubeDL.h"
 #include <Strsafe.h>
 #include <string>
 #include <set>
@@ -462,18 +463,17 @@ std::wstring YouTubeAPI::GetStreamUrl(const std::wstring &id) {
                     std::string stream;
                     if (px.HasMember("url")) stream = px["url"].GetString();
                     if (stream.empty() && px.HasMember("cipher")) {
-                        std::string cipher = px["cipher"].GetString();
+                        std::string s, sig, sp = "signature";
 
-                        stream = Tools::UrlDecode(Tools::FindBetween(cipher, "url=", "&"));
-                        std::string s = Tools::UrlDecode(Tools::FindBetween(cipher, "s=", "&"));
-                        std::string sp = Tools::UrlDecode(Tools::FindBetween(cipher, "sp=", "&"));
-                        std::string sig = Tools::UrlDecode(Tools::FindBetween(cipher, "sig=", "&"));
+                        Tools::SplitString(px["cipher"].GetString(), "&", [&](const std::string &token) {
+                                 if (token.find("url=")  == 0) { stream = Tools::UrlDecode(token.substr(4)); }
+                            else if (token.find("s=")    == 0) { s      = Tools::UrlDecode(token.substr(2)); YouTubeAPI::DecodeSignature(s); }
+                            else if (token.find("sp=")   == 0) { sp     = Tools::UrlDecode(token.substr(3)); }
+                            else if (token.find("sig=")  == 0) { sig    = Tools::UrlDecode(token.substr(4)); }
+                        });
 
-                        if (sp.empty()) sp = "signature";
-
-                        if (!s.empty()) {
-                            YouTubeAPI::DecodeSignature(s);
-                        } else if (!sig.empty()) s = sig;
+                        if (s.empty() && !sig.empty())
+                            s = sig;
 
                         stream += "&" + sp + "=" + s;
                     }
@@ -484,7 +484,7 @@ std::wstring YouTubeAPI::GetStreamUrl(const std::wstring &id) {
                         urls[itag] = wstream;
                     }
 
-                    if (px.HasMember("audioQuality") && strcmp(px["audioQuality"].GetString(), "AUDIO_QUALITY_MEDIUM") == 0) {
+                    if (px.HasMember("audioQuality") && strcmp(px["audioQuality"].GetString(), "AUDIO_QUALITY_MEDIUM") == 0 && px.HasMember("mimeType") && strstr(px["mimeType"].GetString(), "mp4") != nullptr) {
                         medium_stream = wstream;
                     }
                 }
@@ -506,6 +506,16 @@ std::wstring YouTubeAPI::GetStreamUrl(const std::wstring &id) {
             }
         }
     }, true);
+
+    if (stream_url.empty()) {
+        stream_url = YouTubeDL::GetStreamUrl(id);
+        static bool updated = false;
+        if (stream_url.empty() && !updated) {
+            updated = true;
+            YouTubeDL::Update();
+        }
+    }
+
     return stream_url;
 }
 
@@ -516,7 +526,7 @@ void YouTubeAPI::LoadSignatureDecoder() {
         { "reverse", [](std::string &s, int param) { std::reverse(s.begin(), s.end()); } },
     };
 
-    std::wstring ua(L"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3353.0 Safari/537.36");
+    std::wstring ua(L"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36");
     AimpHTTP::Get(L"https://www.youtube.com/\r\nUser-Agent: " + ua, [&](unsigned char *data1, int) {
         std::string player = Tools::FindBetween((char *)data1, "\"js\":\"", "\"");
         if (!player.empty()) {
@@ -532,7 +542,7 @@ void YouTubeAPI::LoadSignatureDecoder() {
                 Tools::ReplaceString("\r", "", data);
 
                 // Taken from youtube-dl
-                // https://github.com/ytdl-org/youtube-dl/blob/c968f738df8e21d7a7f2f86f697207e0476b76ef/youtube_dl/extractor/youtube.py#L1342
+                // https://github.com/ytdl-org/youtube-dl/blob/master/youtube_dl/extractor/youtube.py#L1342
                 std::vector<std::regex> patterns {
                     std::regex(R"PATTERN(\b[cs]\s*&&\s*[adf]\.set\([^,]+\s*,\s*encodeURIComponent\s*\(\s*([a-zA-Z0-9$]+)\()PATTERN"),
                     std::regex(R"PATTERN(\b[a-zA-Z0-9]+\s*&&\s*[a-zA-Z0-9]+\.set\([^,]+\s*,\s*encodeURIComponent\s*\(\s*([a-zA-Z0-9$]+)\()PATTERN"),

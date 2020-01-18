@@ -27,6 +27,7 @@ struct Tools {
 
     static std::wstring UrlEncode(const std::wstring &);
     static std::string UrlDecode(const std::string &input);
-    static void OutputLastError();
+    static void OutputLastError(std::wstring *out = nullptr);
+    static void ShowLastError(std::wstring message);
 };
 
