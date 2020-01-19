@@ -37,6 +37,10 @@ MonitorURLs=Monitorear direcciones web agregadas
 MonitorUserPlaylists=Monitorear listas de reproducción del usuario
 CheckAtStartup=Buscar nuevos temas al iniciar AIMP
 CheckEvery=Buscar nuevos temas cada|horas
+YoutubeDLTimeout=Timeout|seconds
+YoutubeDLAlways=Always use youtube-dl
+YoutubeDLUpdate=Update
+YoutubeDLParameters=Parameters
 
 [YouTube.Playlists]
 Favorites=Favoritos

@@ -9,6 +9,7 @@
 #include <cctype>
 #include <string>
 #include <algorithm>
+#include <process.h>
 
 extern DWORD g_MainThreadId;
 static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> wStrConverter;
@@ -55,8 +56,9 @@ void Tools::ShowLastError(std::wstring message) {
     if (!error.empty())
         message += L" - " + error;
 
-    if (g_MainThreadId == GetCurrentThreadId())
+    Tools::ExecuteInNewThread([message] {
         MessageBox(Plugin::instance()->GetMainWindowHandle(), message.c_str(), Plugin::instance()->Lang(L"YouTube.Messages\\Error").c_str(), MB_OK | MB_ICONERROR);
+    });
 }
 
 std::wstring Tools::UrlEncode(const std::wstring &url) {
@@ -200,3 +202,14 @@ Config::TrackInfo *Tools::TrackInfo(const std::wstring &id) {
 Config::TrackInfo *Tools::TrackInfo(IAIMPString *FileName) {
     return TrackInfo(Tools::TrackIdFromUrl(FileName->GetData()));
 }
+
+void Tools::ExecuteInNewThread(std::function<void()> &&cb) {
+    // If usage of this function becomes common enough, change this to use single thread that we push callbacks to, instead of creating new thread each time
+    auto ptr = new std::function<void()>(std::move(cb));
+    _beginthread([](void *arg) {
+        auto ptr = static_cast<std::function<void()> *>(arg);
+        (*ptr)();
+        delete ptr;
+    }, 0, ptr);
+}
+

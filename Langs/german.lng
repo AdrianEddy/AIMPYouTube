@@ -37,6 +37,10 @@ MonitorURLs=Überwache die URLs
 MonitorUserPlaylists=Überwache die eigenen Playlists
 CheckAtStartup=Überprüfe auf neue Titel beim Programmstart
 CheckEvery=Prüfe auf neue Titel jede|Stunde
+YoutubeDLTimeout=Timeout|seconds
+YoutubeDLAlways=Always use youtube-dl
+YoutubeDLUpdate=Update
+YoutubeDLParameters=Parameters
 
 [YouTube.Playlists]
 Favorites=Favoriten

@@ -37,6 +37,10 @@ MonitorURLs=Мониторинг добавленных URL-адресов
 MonitorUserPlaylists=Мониторинг плейлистов пользователя
 CheckAtStartup=Проверка новых треков при запуске AIMP
 CheckEvery=Проверка новых треков| (Период в часах)
+YoutubeDLTimeout=Timeout|seconds
+YoutubeDLAlways=Always use youtube-dl
+YoutubeDLUpdate=Update
+YoutubeDLParameters=Parameters
 
 [YouTube.Playlists]
 Favorites=Избранное

@@ -29,5 +29,7 @@ struct Tools {
     static std::string UrlDecode(const std::string &input);
     static void OutputLastError(std::wstring *out = nullptr);
     static void ShowLastError(std::wstring message);
+
+    static void ExecuteInNewThread(std::function<void()> &&cb);
 };
 

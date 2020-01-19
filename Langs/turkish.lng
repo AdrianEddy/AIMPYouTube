@@ -1,4 +1,4 @@
-[FILE]
+﻿[FILE]
 Author=Bilâl AFŞAR
 Name=Türkçe (TR)
 VersionID=0
@@ -37,6 +37,10 @@ MonitorURLs=Takip edilen adresler
 MonitorUserPlaylists=Takip edilen kullanıcı müzik listeleri
 CheckAtStartup=AIMP başladığında yeni parça kontrolü yap
 CheckEvery=Yeni parça kontrolünü her|saatte yap
+YoutubeDLTimeout=Timeout|seconds
+YoutubeDLAlways=Always use youtube-dl
+YoutubeDLUpdate=Update
+YoutubeDLParameters=Parameters
 
 [YouTube.Playlists]
 Favorites=Beğenilenler

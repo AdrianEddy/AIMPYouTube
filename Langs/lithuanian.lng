@@ -37,6 +37,10 @@ MonitorURLs=Rodyti pridėtus URLs
 MonitorUserPlaylists=Rodyti vartotojo grojaraščius
 CheckAtStartup=Patikrinti naujus įrašys paleidžiant AIMP
 CheckEvery=Patikrinti naujus įrašus kas|valandas
+YoutubeDLTimeout=Timeout|seconds
+YoutubeDLAlways=Always use youtube-dl
+YoutubeDLUpdate=Update
+YoutubeDLParameters=Parameters
 
 [YouTube.Playlists]
 Favorites=Mėgstamiausi

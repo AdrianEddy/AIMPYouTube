@@ -6,6 +6,10 @@
 #include <string>
 #include <array>
 
+std::wstring YouTubeDL::Params = L"-f best[ext=mp4]/best";
+int YouTubeDL::Timeout = 30;
+bool YouTubeDL::Force = false;
+
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 std::wstring YouTubeDL::GetPath() {
     static std::wstring youtube_dl;
@@ -23,11 +27,7 @@ std::wstring YouTubeDL::GetPath() {
     return youtube_dl;
 }
 std::wstring YouTubeDL::GetStreamUrl(const std::wstring &id) {
-    // TODO: add to config
-    std::wstring params = L"-f best[ext=mp4]/best";
-    int timeout = 30;
-
-    std::wstring cmd = L"\"" + GetPath() + L"\" -g " + params + L" -- " + id;
+    std::wstring cmd = L"\"" + GetPath() + L"\" -g " + Params + L" -- " + id;
 
     HANDLE pipeReadOut = nullptr, pipeWriteOut = nullptr;
     HANDLE pipeReadErr = nullptr, pipeWriteErr = nullptr;
@@ -57,7 +57,7 @@ std::wstring YouTubeDL::GetStreamUrl(const std::wstring &id) {
         return {};
     }
 
-    const auto waitResult = WaitForSingleObject(pi.hProcess, timeout * 1000);
+    const auto waitResult = WaitForSingleObject(pi.hProcess, Timeout * 1000);
     if (waitResult == WAIT_TIMEOUT) return {};
     if (waitResult != WAIT_OBJECT_0) {
         Tools::ShowLastError(L"YouTubeDL::Call(): WaitForSingleObject");
@@ -92,6 +92,12 @@ std::wstring YouTubeDL::GetStreamUrl(const std::wstring &id) {
     if (exitCode) {
         Tools::ShowLastError(L"YouTubeDL::Call(): " + error);
         return {};
+    }
+
+    static bool updated = false;
+    if (result.empty() && !updated) {
+        updated = true;
+        YouTubeDL::Update();
     }
 
     return result;

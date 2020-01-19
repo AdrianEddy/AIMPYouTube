@@ -71,5 +71,4 @@ private:
     YouTubeAPI &operator=(const YouTubeAPI &);
 
     static DecoderMap SigDecoder;
-    static bool ForceYouTubeDL;
 };

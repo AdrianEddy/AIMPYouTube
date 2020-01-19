@@ -37,6 +37,10 @@ MonitorURLs=Kontrolovať pridané URL adresy
 MonitorUserPlaylists=Kontrolovať playlisty používateľa
 CheckAtStartup=Kontrolovať nové skladby pri spustení prehrávača AIMP
 CheckEvery=Kontrolovať nové skladby každých |hodín
+YoutubeDLTimeout=Timeout|seconds
+YoutubeDLAlways=Always use youtube-dl
+YoutubeDLUpdate=Update
+YoutubeDLParameters=Parameters
 
 [YouTube.Playlists]
 Favorites=Obľúbené

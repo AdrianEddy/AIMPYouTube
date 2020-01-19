@@ -9,6 +9,7 @@
 #include "ExclusionsDialog.h"
 #include <Shellapi.h>
 #include <ctime>
+#include "YouTubeDL.h"
 
 #include <Commctrl.h>
 #pragma comment(lib, "Comctl32.lib")
@@ -78,7 +79,16 @@ void WINAPI OptionsDialog::Notification(int ID) {
             SetDlgItemText(m_handle, IDC_CHECKEVERY,      checkEveryText0.c_str());
             SetDlgItemText(m_handle, IDC_HOURS,           checkEveryText1.c_str());
             SetDlgItemText(m_handle, IDC_MANAGEEXCLUSIONS,m_plugin->Lang(L"YouTube.Exclusions\\Header").c_str());
+
+            std::wstring ytdlTimeoutText0 = m_plugin->Lang(L"YouTube.Options\\YoutubeDLTimeout", 0);
+            std::wstring ytdlTimeoutText1 = m_plugin->Lang(L"YouTube.Options\\YoutubeDLTimeout", 1);
+            SetDlgItemText(m_handle, IDC_YTDLFORCE,        m_plugin->Lang(L"YouTube.Options\\YoutubeDLAlways").c_str());
+            SetDlgItemText(m_handle, IDC_YTDLUPDATE,       m_plugin->Lang(L"YouTube.Options\\YoutubeDLUpdate").c_str());
+            SetDlgItemText(m_handle, IDC_YTDLPARAMSTEXT,   m_plugin->Lang(L"YouTube.Options\\YoutubeDLParameters").c_str());
+            SetDlgItemText(m_handle, IDC_YTDLTIMEOUTTEXT,  ytdlTimeoutText0.c_str());
+            SetDlgItemText(m_handle, IDC_SECONDS,          ytdlTimeoutText1.c_str());
             SendDlgItemMessage(m_handle, IDC_CONNECTBTN, WM_UPDATELOCALE, 0, 0);
+            SendDlgItemMessage(m_handle, IDC_YTDLUPDATE, WM_UPDATELOCALE, 0, 0);
 
             HDC hdc = GetDC(m_handle);
 
@@ -108,6 +118,7 @@ void WINAPI OptionsDialog::Notification(int ID) {
             };
 
             adjustRect(checkEveryText0, checkEveryText1, IDC_CHECKEVERY, IDC_CHECKEVERYVALUE, IDC_CHECKEVERYVALUESPIN, IDC_HOURS);
+            adjustRect(ytdlTimeoutText0, ytdlTimeoutText1, IDC_YTDLTIMEOUTTEXT, IDC_YTDLTIMEOUT, IDC_YTDLTIMEOUTSPIN, IDC_SECONDS);
 
             ReleaseDC(m_handle, hdc);
         } break;
@@ -121,6 +132,10 @@ void WINAPI OptionsDialog::Notification(int ID) {
             SendDlgItemMessage(m_handle, IDC_CHECKONSTARTUP, BM_SETCHECK, Config::GetInt32(L"CheckOnStartup", 1), 0);
             SendDlgItemMessage(m_handle, IDC_CHECKEVERY, BM_SETCHECK, Config::GetInt32(L"CheckEveryEnabled", 1), 0);
             SendDlgItemMessage(m_handle, IDC_CHECKEVERYVALUESPIN, UDM_SETPOS32, 0, Config::GetInt32(L"CheckEveryHours", 1));
+
+            SendDlgItemMessage(m_handle, IDC_YTDLPARAMS, WM_SETTEXT, 0, (LPARAM)Config::GetString(L"YouTubeDLParams", YouTubeDL::Params).c_str());
+            SendDlgItemMessage(m_handle, IDC_YTDLTIMEOUTSPIN, UDM_SETPOS32, 0, Config::GetInt32(L"YouTubeDLTimeout", YouTubeDL::Timeout));
+            SendDlgItemMessage(m_handle, IDC_YTDLFORCE, BM_SETCHECK, Config::GetInt32(L"YouTubeDLAlways", 0), 0);
 
             BOOL enable = SendDlgItemMessage(m_handle, IDC_CHECKEVERY, BM_GETCHECK, 0, 0) == BST_CHECKED;
             EnableWindow(GetDlgItem(m_handle, IDC_CHECKEVERYVALUE), enable);
@@ -146,6 +161,14 @@ void WINAPI OptionsDialog::Notification(int ID) {
                 Config::SetInt32(L"CheckEveryEnabled", SendDlgItemMessage(m_handle, IDC_CHECKEVERY, BM_GETCHECK, 0, 0) == BST_CHECKED);
                 Config::SetInt32(L"CheckOnStartup", SendDlgItemMessage(m_handle, IDC_CHECKONSTARTUP, BM_GETCHECK, 0, 0) == BST_CHECKED);
                 Config::SetInt32(L"MonitorUserPlaylists", SendDlgItemMessage(m_handle, IDC_MONITORPLAYLISTS, BM_GETCHECK, 0, 0) == BST_CHECKED);
+
+                Config::SetInt32(L"YouTubeDLAlways", YouTubeDL::Force = (SendDlgItemMessage(m_handle, IDC_YTDLFORCE, BM_GETCHECK, 0, 0) == BST_CHECKED));
+                Config::SetInt32(L"YouTubeDLTimeout", YouTubeDL::Timeout = SendDlgItemMessage(m_handle, IDC_YTDLTIMEOUTSPIN, UDM_GETPOS32, 0, 0));
+
+                WCHAR buffer[4096];
+                SendDlgItemMessage(m_handle, IDC_YTDLPARAMS, WM_GETTEXT, 4096, (LPARAM)buffer);
+                YouTubeDL::Params = buffer;
+                Config::SetString(L"YouTubeDLParams", YouTubeDL::Params.c_str());
             }
 
             if (m_userPlaylists.size() > 0) {
@@ -166,29 +189,24 @@ void OptionsDialog::LoadProfileInfo(std::function<void()> onFinished) {
         return;
     }
     std::wstring auth = L"\r\nAuthorization: Bearer " + m_plugin->getAccessToken();
-    AimpHTTP::Get(L"https://www.googleapis.com/plus/v1/people/me" + auth, [this](unsigned char *data, int size) {
+    AimpHTTP::Get(L"https://www.googleapis.com/oauth2/v3/userinfo" + auth, [this](unsigned char *data, int size) {
         rapidjson::Document d;
         d.Parse(reinterpret_cast<const char *>(data));
 
-        if (d.IsObject() && d.HasMember("id")) {
-            m_userId = Tools::ToWString(d["id"]);
+        if (d.IsObject() && d.HasMember("sub")) {
+            m_userId = Tools::ToWString(d["sub"]);
 
-            if (d.HasMember("displayName")) {
-                m_userName = Tools::ToWString(d["displayName"]);
+            if (d.HasMember("name")) {
+                m_userName = Tools::ToWString(d["name"]);
             }
-            if (d.HasMember("emails") && d["emails"].Size() > 0) {
-                m_userInfo = Tools::ToWString(d["emails"][0]["value"]);
+            if (d.HasMember("email")) {
+                m_userInfo = Tools::ToWString(d["email"]);
             }
 
             OptionsModified();
 
-            if (d.HasMember("image")) { // Get the avatar
-                // No idea why, but on old Windows XP AIMP had trouble getting https avatar. Replace with http
-                std::wstring url(Tools::ToWString(d["image"]["url"]));
-                url += L"&sz=100";
-
-                if (url.find(L"https") == 0) 
-                    url.replace(0, 5, L"http");
+            if (d.HasMember("picture")) { // Get the avatar
+                std::wstring url(Tools::ToWString(d["picture"]));
 
                 AimpHTTP::Download(url, Config::PluginConfigFolder() + L"user_avatar.jpg", [this](unsigned char *data, int size) {
                     UpdateProfileInfo();
@@ -351,7 +369,7 @@ LRESULT CALLBACK OptionsDialog::ButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, 
             } else {
                 SetWindowPos(hWnd, NULL, rc.left + ((rc.right - rc.left) - r.Width) / 2, rc.top + ((rc.bottom - rc.top) - r.Height) / 2, r.Width, r.Height, SWP_NOZORDER);
             }
-            
+
             GetRoundRectPath(&borderPath, r, 4);
             layoutRect = RectF(currentBtn->LogoOffset, 0, r.Width - currentBtn->LogoOffset, r.Height);
         } break;
@@ -553,7 +571,7 @@ LRESULT CALLBACK OptionsDialog::AvatarProc(HWND hWnd, UINT uMsg, WPARAM wParam, 
                 SelectObject(hdc, penInner);
                 Rectangle(hdc, 1, 1, 100 - 1, 100 - 1);
             }
-            
+
             EndPaint(hWnd, &ps);
             return TRUE;
         }
@@ -586,14 +604,14 @@ LRESULT CALLBACK OptionsDialog::LinkProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
             SendMessage(hWnd, WM_SETFONT, WPARAM(versionFont), TRUE);
         } break;
         case WM_USER: return mouseOver;
-        case WM_LBUTTONUP: 
+        case WM_LBUTTONUP:
             switch (GetWindowLong(hWnd, GWL_ID)) {
                 case IDC_VERSION: ShellExecute(hWnd, L"open", L"http://www.aimp.ru/forum/index.php?topic=50071", NULL, NULL, SW_SHOWNORMAL); break;
                 case IDC_MANAGEEXCLUSIONS: ExclusionsDialog::Show(GetParent(GetParent(hWnd))); break;
             }
         break;
         case WM_MOUSELEAVE:
-            mouseOver = false; 
+            mouseOver = false;
             InvalidateRect(hWnd, NULL, FALSE);
             mouseTracking = false;
         break;
@@ -642,10 +660,12 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
             SetWindowSubclass(GetDlgItem(hwnd, IDC_MAINFRAME),       FrameProc,    0, /*OptionsDialog*/lParam); SendDlgItemMessage(hwnd, IDC_MAINFRAME, WM_SUBCLASSINIT, 0, 0);
             SetWindowSubclass(GetDlgItem(hwnd, IDC_AUTHGROUPBOX),    GroupBoxProc, 0, /*OptionsDialog*/lParam); SendDlgItemMessage(hwnd, IDC_AUTHGROUPBOX, WM_SUBCLASSINIT, 0, 0);
             SetWindowSubclass(GetDlgItem(hwnd, IDC_MONITORGROUPBOX), GroupBoxProc, 0, /*OptionsDialog*/lParam); SendDlgItemMessage(hwnd, IDC_MONITORGROUPBOX, WM_SUBCLASSINIT, 0, 0);
+            SetWindowSubclass(GetDlgItem(hwnd, IDC_YTDLGROUPBOX),    GroupBoxProc, 0, /*OptionsDialog*/lParam); SendDlgItemMessage(hwnd, IDC_YTDLGROUPBOX, WM_SUBCLASSINIT, 0, 0);
             SetWindowSubclass(GetDlgItem(hwnd, IDC_AVATAR),          AvatarProc,   0, /*OptionsDialog*/lParam); SendDlgItemMessage(hwnd, IDC_AVATAR, WM_SUBCLASSINIT, 0, 0);
             SetWindowSubclass(GetDlgItem(hwnd, IDC_VERSION),         LinkProc,     0, /*OptionsDialog*/lParam); SendDlgItemMessage(hwnd, IDC_VERSION, WM_SUBCLASSINIT, 0, 0);
             SetWindowSubclass(GetDlgItem(hwnd, IDC_MANAGEEXCLUSIONS),LinkProc,     0, /*OptionsDialog*/lParam); SendDlgItemMessage(hwnd, IDC_MANAGEEXCLUSIONS, WM_SUBCLASSINIT, 0, 0);
             SendDlgItemMessage(hwnd, IDC_CHECKEVERYVALUESPIN, UDM_SETRANGE32, 1, 720);
+            SendDlgItemMessage(hwnd, IDC_YTDLTIMEOUTSPIN, UDM_SETRANGE32, 1, 720);
 
             userNameFont = CreateFont(23, 0, 0, 0, FW_SEMIBOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_MODERN, L"Tahoma");
             SendDlgItemMessage(hwnd, IDC_USERNAME, WM_SETFONT, WPARAM(userNameFont), TRUE);
@@ -659,6 +679,7 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
 
             HWND group = GetDlgItem(hwnd, IDC_AUTHGROUPBOX);    GetClientRect(group, &rc2); SetWindowPos(group, NULL, 0, 0, rc.right - 21, rc2.bottom, SWP_NOMOVE | SWP_NOZORDER);
                  group = GetDlgItem(hwnd, IDC_MONITORGROUPBOX); GetClientRect(group, &rc2); SetWindowPos(group, NULL, 0, 0, rc.right - 21, rc2.bottom, SWP_NOMOVE | SWP_NOZORDER);
+                 group = GetDlgItem(hwnd, IDC_YTDLGROUPBOX);    GetClientRect(group, &rc2); SetWindowPos(group, NULL, 0, 0, rc.right - 21, rc2.bottom, SWP_NOMOVE | SWP_NOZORDER);
             HWND version = GetDlgItem(hwnd, IDC_VERSION);
             GetClientRect(version, &rc2);
             SetWindowPos(version, NULL, rc.right - 106, rc.bottom - rc2.bottom - 7, 100, rc2.bottom, SWP_NOZORDER);
@@ -666,6 +687,13 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
             HWND manageLink = GetDlgItem(hwnd, IDC_MANAGEEXCLUSIONS);
             GetClientRect(manageLink, &rc2);
             SetWindowPos(manageLink, NULL, rc.left + 10, rc.bottom - rc2.bottom - 7, 120, rc2.bottom, SWP_NOZORDER);
+
+            GetWindowRect(GetDlgItem(hwnd, IDC_YTDLGROUPBOX), &rc);
+            MapWindowPoints(HWND_DESKTOP, hwnd, (LPPOINT)&rc, 2);
+            HWND ytdlUpdate = GetDlgItem(hwnd, IDC_YTDLUPDATE);
+            GetClientRect(ytdlUpdate, &rc2);
+            SetWindowPos(ytdlUpdate, NULL, rc.right - rc2.right - 7, rc.bottom - rc2.bottom - 7, rc2.right, rc2.bottom, SWP_NOZORDER);
+
             return TRUE;
         } break;
         case WM_CTLCOLORSTATIC: {
@@ -694,7 +722,7 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
         break;
         case WM_COMMAND: {
             switch (LOWORD(wParam)) {
-                case IDC_CONNECTBTN: 
+                case IDC_CONNECTBTN:
                     if (!plugin->isConnected()) {
                         Connect([] {
                             dialog->OptionsModified();
@@ -715,6 +743,8 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
                         dialog->UpdateProfileInfo();
                     }
                 break;
+                case IDC_YTDLPARAMS:
+                case IDC_YTDLTIMEOUT:
                 case IDC_CHECKEVERYVALUE:
                     if (HIWORD(wParam) == EN_CHANGE) {
                         if (dialog)
@@ -723,6 +753,7 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
                 break;
                 case IDC_MONITORPLAYLISTS:
                 case IDC_CHECKONSTARTUP:
+                case IDC_YTDLFORCE:
                 case IDC_CHECKEVERY:
                     if (HIWORD(wParam) == BN_CLICKED) {
                         dialog->OptionsModified();
@@ -733,6 +764,11 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
                             EnableWindow(GetDlgItem(hwnd, IDC_CHECKEVERYVALUESPIN), enable);
                             EnableWindow(GetDlgItem(hwnd, IDC_HOURS), enable);
                         }
+                    }
+                break;
+                case IDC_YTDLUPDATE:
+                    if (HIWORD(wParam) == BN_CLICKED) {
+                        YouTubeDL::Update();
                     }
                 break;
             }
@@ -752,7 +788,7 @@ void OptionsDialog::Connect(std::function<void()> onFinished) {
                 s2 = Tools::ToString(Plugin::instance()->Lang(L"YouTube\\ConnectStatusOK", 1)),
                 s3 = Tools::ToString(Plugin::instance()->Lang(L"YouTube\\ConnectStatusError", 0)),
                 s4 = Tools::ToString(Plugin::instance()->Lang(L"YouTube\\ConnectStatusError", 1));
-    
+
     (new TcpServer(35910, [onFinished, s1, s2, s3, s4](TcpServer *s, char *request, std::string &response) -> bool {
         response = "HTTP/1.1 200 OK\r\n"
                    "Content-Type: text/html\r\n"
@@ -804,7 +840,7 @@ void OptionsDialog::Connect(std::function<void()> onFinished) {
 
     ShellExecuteA(Plugin::instance()->GetMainWindowHandle(),
                   "open",
-                  "https://accounts.google.com/o/oauth2/auth?client_id=" CLIENT_ID "&redirect_uri=http%3A%2F%2Flocalhost%3A35910%2F&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.readonly+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email",
+                  "https://accounts.google.com/o/oauth2/auth?client_id=" CLIENT_ID "&redirect_uri=http%3A%2F%2Flocalhost%3A35910%2F&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.readonly+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile",
                   NULL, NULL, SW_SHOWNORMAL);
 }
 
@@ -812,7 +848,11 @@ static std::vector<int> s_tabOrder({ IDC_CONNECTBTN,
                                      IDC_MONITORPLAYLISTS,
                                      IDC_CHECKONSTARTUP,
                                      IDC_CHECKEVERY,
-                                     IDC_CHECKEVERYVALUE
+                                     IDC_CHECKEVERYVALUE,
+                                     IDC_YTDLFORCE,
+                                     IDC_YTDLPARAMS,
+                                     IDC_YTDLTIMEOUT,
+                                     IDC_YTDLUPDATE
 });
 
 BOOL WINAPI OptionsDialog::SelectFirstControl() {

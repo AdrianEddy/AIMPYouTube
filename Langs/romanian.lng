@@ -1,4 +1,4 @@
-[FILE]
+﻿[FILE]
 Author=Andronachi Marian
 Name=Română (RO)
 VersionID=0
@@ -37,6 +37,10 @@ MonitorURLs=Monitorizează adresele url adăugate
 MonitorUserPlaylists=Monitorizează lista de redare ale utilizatorilor.
 CheckAtStartup=Verifică daca sunt melodii noi când pornește AIMP.
 CheckEvery=Verifică daca sunt melodii noi la fiecare|(de) ore.
+YoutubeDLTimeout=Timeout|seconds
+YoutubeDLAlways=Always use youtube-dl
+YoutubeDLUpdate=Update
+YoutubeDLParameters=Parameters
 
 [YouTube.Playlists]
 Favorites=Favorite

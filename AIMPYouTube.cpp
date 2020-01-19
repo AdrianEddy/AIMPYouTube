@@ -13,6 +13,7 @@
 #include "PlayerHook.h"
 #include "FileSystem.h"
 #include "ArtworkProvider.h"
+#include "YouTubeDL.h"
 #include <set>
 #include <ctime>
 
@@ -145,6 +146,10 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
 
     StartMonitorTimer();
     UpdatePlaylistMenu();
+
+    YouTubeDL::Params  = Config::GetString(L"YouTubeDLParams", YouTubeDL::Params);
+    YouTubeDL::Timeout = Config::GetInt32(L"YouTubeDLTimeout", YouTubeDL::Timeout);
+    YouTubeDL::Force   = Config::GetInt32(L"YouTubeDLAlways", 0);
 
     return S_OK;
 }

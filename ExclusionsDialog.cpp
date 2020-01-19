@@ -18,7 +18,7 @@ HRESULT SetExplorerTheme(HWND hwnd) {
         if (!setWindowTheme)
             setWindowTheme = (SetWindowThemeFuncPtr)GetProcAddress(DLL, "SetWindowTheme");
 
-        if (setWindowTheme) 
+        if (setWindowTheme)
             return setWindowTheme(hwnd, L"Explorer", NULL);
     }
     return E_FAIL;
@@ -121,7 +121,7 @@ BOOL CALLBACK ExclusionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPAR
             SetWindowText (hwnd,                         Plugin::instance()->Lang(L"YouTube.Exclusions\\Title").c_str());
             SetDlgItemText(hwnd, IDOK,                   Plugin::instance()->Lang(L"YouTube.Exclusions\\OK").c_str());
             SetDlgItemText(hwnd, IDC_EXCLUSIONSGROUPBOX, Plugin::instance()->Lang(L"YouTube.Exclusions\\Header").c_str());
-            
+
             auto lv = GetDlgItem(hwnd, IDC_LISTVIEW);
 
             SetWindowSubclass(GetDlgItem(hwnd, IDC_EXCLUSIONSGROUPBOX), OptionsDialog::GroupBoxProc, 0, 0); SendDlgItemMessage(hwnd, IDC_EXCLUSIONSGROUPBOX, WM_SUBCLASSINIT, 0, 0);
@@ -210,11 +210,10 @@ LRESULT CALLBACK ExclusionsDialog::ListViewProc(HWND hWnd, UINT uMsg, WPARAM wPa
                         Config::SaveExtendedConfig();
                     }
                 } break;
-            }
-            break;
+            } break;
         case WM_NCDESTROY:
             RemoveWindowSubclass(hWnd, ListViewProc, uIdSubclass);
-            break;
+        break;
     }
     return DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }

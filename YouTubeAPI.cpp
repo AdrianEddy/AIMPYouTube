@@ -17,7 +17,6 @@
 
 extern DWORD g_MainThreadId;
 YouTubeAPI::DecoderMap YouTubeAPI::SigDecoder;
-bool YouTubeAPI::ForceYouTubeDL = false;
 
 void YouTubeAPI::AddFromJson(IAIMPPlaylist *playlist, const rapidjson::Value &d, std::shared_ptr<LoadingState> state) {
     if (!playlist || !state || !Plugin::instance()->core())
@@ -409,15 +408,14 @@ void YouTubeAPI::ResolveUrl(const std::wstring &url, const std::wstring &playlis
         }
         return;
     }
-    if (g_MainThreadId == GetCurrentThreadId())
+    Tools::ExecuteInNewThread([] {
         MessageBox(Plugin::instance()->GetMainWindowHandle(), Plugin::instance()->Lang(L"YouTube.Messages\\CantResolve").c_str(), Plugin::instance()->Lang(L"YouTube.Messages\\Error").c_str(), MB_OK | MB_ICONERROR);
+    });
 }
 
 std::wstring YouTubeAPI::GetStreamUrl(const std::wstring &id) {
-    // TODO: Add ForceYouTubeDL to config
-
     std::wstring stream_url;
-    if (!ForceYouTubeDL) {
+    if (!YouTubeDL::Force) {
         std::wstring url2(L"https://www.youtube.com/get_video_info?video_id=" + id + L"&el=detailpage&sts=16511");
         AimpHTTP::Get(url2, [&](unsigned char *data, int size) {
             if (char *streams = strstr((char *)data, "player_response=")) {
@@ -458,46 +456,46 @@ std::wstring YouTubeAPI::GetStreamUrl(const std::wstring &id) {
                 std::wstring medium_stream;
 
                 if (d.HasMember("streamingData") && d["streamingData"].IsObject()) {
-                    rapidjson::Value formats;
-                         if (d["streamingData"].HasMember("formats")         && d["streamingData"]["formats"].IsArray()) formats = d["streamingData"]["formats"].GetArray();
-                    else if (d["streamingData"].HasMember("adaptiveFormats") && d["streamingData"]["adaptiveFormats"].IsArray()) formats = d["streamingData"]["adaptiveFormats"].GetArray();
-
-                    for (auto x = formats.Begin(), e = formats.End(); x != e; x++) {
-                        const rapidjson::Value &px = *x;
-                        if (!px.IsObject())
-                            continue;
-
-                        std::string stream;
-                        if (px.HasMember("url")) stream = px["url"].GetString();
-                        if (stream.empty() && px.HasMember("cipher")) {
-                            std::string s, sig, sp = "signature";
-
-                            Tools::SplitString(px["cipher"].GetString(), "&", [&](const std::string &token) {
-                                     if (token.find("url=")  == 0) { stream = Tools::UrlDecode(token.substr(4)); }
-                                else if (token.find("s=")    == 0) { s      = Tools::UrlDecode(token.substr(2)); YouTubeAPI::DecodeSignature(s); }
-                                else if (token.find("sp=")   == 0) { sp     = Tools::UrlDecode(token.substr(3)); }
-                                else if (token.find("sig=")  == 0) { sig    = Tools::UrlDecode(token.substr(4)); }
-                            });
-
-                            if (s.empty() && !sig.empty())
-                                s = sig;
-
-                            stream += "&" + sp + "=" + s;
-                        }
-                        std::wstring wstream = Tools::ToWString(stream);
-
-                        if (px.HasMember("itag") && px["itag"].IsInt()) {
-                            int itag = px["itag"].GetInt();
-                            urls[itag] = wstream;
-                        }
-
-                        if (px.HasMember("audioQuality") && strcmp(px["audioQuality"].GetString(), "AUDIO_QUALITY_MEDIUM") == 0 && px.HasMember("mimeType") && strstr(px["mimeType"].GetString(), "mp4") != nullptr) {
-                            medium_stream = wstream;
-                        }
-                    }
-
                     if (d["streamingData"].HasMember("hlsManifestUrl") && d["streamingData"]["hlsManifestUrl"].IsString()) {
                         urls[-1] = Tools::ToWString(d["streamingData"]["hlsManifestUrl"].GetString());
+                    } else {
+                        rapidjson::Value formats;
+                             if (d["streamingData"].HasMember("formats")         && d["streamingData"]["formats"].IsArray()) formats = d["streamingData"]["formats"].GetArray();
+                        else if (d["streamingData"].HasMember("adaptiveFormats") && d["streamingData"]["adaptiveFormats"].IsArray()) formats = d["streamingData"]["adaptiveFormats"].GetArray();
+
+                        for (auto x = formats.Begin(), e = formats.End(); x != e; x++) {
+                            const rapidjson::Value &px = *x;
+                            if (!px.IsObject())
+                                continue;
+
+                            std::string stream;
+                            if (px.HasMember("url")) stream = px["url"].GetString();
+                            if (stream.empty() && px.HasMember("cipher")) {
+                                std::string s, sig, sp = "signature";
+
+                                Tools::SplitString(px["cipher"].GetString(), "&", [&](const std::string &token) {
+                                         if (token.find("url=")  == 0) { stream = Tools::UrlDecode(token.substr(4)); }
+                                    else if (token.find("s=")    == 0) { s      = Tools::UrlDecode(token.substr(2)); YouTubeAPI::DecodeSignature(s); }
+                                    else if (token.find("sp=")   == 0) { sp     = Tools::UrlDecode(token.substr(3)); }
+                                    else if (token.find("sig=")  == 0) { sig    = Tools::UrlDecode(token.substr(4)); }
+                                });
+
+                                if (s.empty() && !sig.empty())
+                                    s = sig;
+
+                                stream += "&" + sp + "=" + s;
+                            }
+                            std::wstring wstream = Tools::ToWString(stream);
+
+                            if (px.HasMember("itag") && px["itag"].IsInt()) {
+                                int itag = px["itag"].GetInt();
+                                urls[itag] = wstream;
+                            }
+
+                            if (px.HasMember("audioQuality") && strcmp(px["audioQuality"].GetString(), "AUDIO_QUALITY_MEDIUM") == 0 && px.HasMember("mimeType") && strstr(px["mimeType"].GetString(), "mp4") != nullptr) {
+                                medium_stream = wstream;
+                            }
+                        }
                     }
                 }
                 for (auto x : streamPriority) {
@@ -519,13 +517,8 @@ std::wstring YouTubeAPI::GetStreamUrl(const std::wstring &id) {
         }, true);
     }
 
-    if (stream_url.empty() || ForceYouTubeDL) {
+    if (stream_url.empty() || YouTubeDL::Force) {
         stream_url = YouTubeDL::GetStreamUrl(id);
-        static bool updated = false;
-        if (stream_url.empty() && !updated) {
-            updated = true;
-            YouTubeDL::Update();
-        }
     }
 
     return stream_url;
@@ -613,7 +606,7 @@ void YouTubeAPI::LoadSignatureDecoder() {
     }, true);
 
     if (YouTubeAPI::SigDecoder.empty())
-        ForceYouTubeDL = true;
+        YouTubeDL::Force = true;
 }
 
 void YouTubeAPI::AddToPlaylist(Config::Playlist &pl, const std::wstring &trackId) {
