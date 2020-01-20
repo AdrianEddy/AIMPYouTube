@@ -11,7 +11,6 @@
 #include <algorithm>
 #include <process.h>
 
-extern DWORD g_MainThreadId;
 static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> wStrConverter;
 
 std::wstring Tools::ToWString(const std::string &string) {

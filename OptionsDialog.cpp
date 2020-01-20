@@ -135,7 +135,7 @@ void WINAPI OptionsDialog::Notification(int ID) {
 
             SendDlgItemMessage(m_handle, IDC_YTDLPARAMS, WM_SETTEXT, 0, (LPARAM)Config::GetString(L"YouTubeDLParams", YouTubeDL::Params).c_str());
             SendDlgItemMessage(m_handle, IDC_YTDLTIMEOUTSPIN, UDM_SETPOS32, 0, Config::GetInt32(L"YouTubeDLTimeout", YouTubeDL::Timeout));
-            SendDlgItemMessage(m_handle, IDC_YTDLFORCE, BM_SETCHECK, Config::GetInt32(L"YouTubeDLAlways", 0), 0);
+            SendDlgItemMessage(m_handle, IDC_YTDLFORCE, BM_SETCHECK, Config::GetInt32(L"YouTubeDLAlways", YouTubeDL::Force), 0);
 
             BOOL enable = SendDlgItemMessage(m_handle, IDC_CHECKEVERY, BM_GETCHECK, 0, 0) == BST_CHECKED;
             EnableWindow(GetDlgItem(m_handle, IDC_CHECKEVERYVALUE), enable);

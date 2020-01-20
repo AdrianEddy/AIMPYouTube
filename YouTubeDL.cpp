@@ -3,6 +3,7 @@
 #include "AIMPYouTube.h"
 #include "AIMPString.h"
 #include "Tools.h"
+#include <windows.h>
 #include <string>
 #include <array>
 
@@ -37,10 +38,10 @@ std::wstring YouTubeDL::GetStreamUrl(const std::wstring &id) {
     sa.bInheritHandle = TRUE;
     sa.lpSecurityDescriptor = nullptr;
 
-    if (!CreatePipe(&pipeReadOut, &pipeWriteOut, &sa, 0)) { Tools::ShowLastError(L"YouTubeDL::Call(): CreatePipe"); return {}; }
-    if (!CreatePipe(&pipeReadErr, &pipeWriteErr, &sa, 0)) { Tools::ShowLastError(L"YouTubeDL::Call(): CreatePipe"); return {}; }
-    if (!SetHandleInformation(pipeReadOut, HANDLE_FLAG_INHERIT, 0)) { Tools::ShowLastError(L"YouTubeDL::Call(): SetHandleInformation"); return {}; }
-    if (!SetHandleInformation(pipeReadErr, HANDLE_FLAG_INHERIT, 0)) { Tools::ShowLastError(L"YouTubeDL::Call(): SetHandleInformation"); return {}; }
+    if (!CreatePipe(&pipeReadOut, &pipeWriteOut, &sa, 0)) { Tools::ShowLastError(L"YouTubeDL::GetStreamUrl(): CreatePipe"); return {}; }
+    if (!CreatePipe(&pipeReadErr, &pipeWriteErr, &sa, 0)) { Tools::ShowLastError(L"YouTubeDL::GetStreamUrl(): CreatePipe"); return {}; }
+    if (!SetHandleInformation(pipeReadOut, HANDLE_FLAG_INHERIT, 0)) { Tools::ShowLastError(L"YouTubeDL::GetStreamUrl(): SetHandleInformation"); return {}; }
+    if (!SetHandleInformation(pipeReadErr, HANDLE_FLAG_INHERIT, 0)) { Tools::ShowLastError(L"YouTubeDL::GetStreamUrl(): SetHandleInformation"); return {}; }
 
     STARTUPINFO si;
     ZeroMemory(&si, sizeof si);
@@ -53,20 +54,20 @@ std::wstring YouTubeDL::GetStreamUrl(const std::wstring &id) {
     ZeroMemory(&pi, sizeof pi);
 
     if (!CreateProcess(nullptr, const_cast<LPWSTR>(cmd.c_str()), nullptr, nullptr, TRUE, CREATE_NO_WINDOW, nullptr, nullptr, &si, &pi)) {
-        Tools::ShowLastError(L"YouTubeDL::Call(): CreateProcess");
+        Tools::ShowLastError(L"YouTubeDL::GetStreamUrl(): CreateProcess");
         return {};
     }
 
     const auto waitResult = WaitForSingleObject(pi.hProcess, Timeout * 1000);
     if (waitResult == WAIT_TIMEOUT) return {};
     if (waitResult != WAIT_OBJECT_0) {
-        Tools::ShowLastError(L"YouTubeDL::Call(): WaitForSingleObject");
+        Tools::ShowLastError(L"YouTubeDL::GetStreamUrl(): WaitForSingleObject");
         return {};
     }
 
     DWORD exitCode;
     if (!GetExitCodeProcess(pi.hProcess, &exitCode)) {
-        Tools::ShowLastError(L"YouTubeDL::Call(): GetExitCodeProcess");
+        Tools::ShowLastError(L"YouTubeDL::GetStreamUrl(): GetExitCodeProcess");
         return {};
     }
 
@@ -89,15 +90,14 @@ std::wstring YouTubeDL::GetStreamUrl(const std::wstring &id) {
     const auto result = readPipe(pipeReadOut);
     const auto error  = readPipe(pipeReadErr);
 
-    if (exitCode) {
-        Tools::ShowLastError(L"YouTubeDL::Call(): " + error);
+    if (exitCode || result.empty()) {
+        Tools::ShowLastError(L"YouTubeDL::GetStreamUrl(): " + error);
+        static bool updated = false;
+        if (!updated) {
+            updated = true;
+            YouTubeDL::Update();
+        }
         return {};
-    }
-
-    static bool updated = false;
-    if (result.empty() && !updated) {
-        updated = true;
-        YouTubeDL::Update();
     }
 
     return result;

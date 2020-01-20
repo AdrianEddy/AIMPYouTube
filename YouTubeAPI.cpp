@@ -15,7 +15,6 @@
 #include <map>
 #include <regex>
 
-extern DWORD g_MainThreadId;
 YouTubeAPI::DecoderMap YouTubeAPI::SigDecoder;
 
 void YouTubeAPI::AddFromJson(IAIMPPlaylist *playlist, const rapidjson::Value &d, std::shared_ptr<LoadingState> state) {
