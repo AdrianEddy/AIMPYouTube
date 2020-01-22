@@ -37,10 +37,10 @@ MonitorURLs=Jälgi lisatud linke
 MonitorUserPlaylists=Jägi kasutaja esitusloendit
 CheckAtStartup=Kontrolli uuemate lugude olemasolu AIMPi käivitamisel
 CheckEvery=Kontrolli uuemate lugude olemasolu iga|tunni järel
-YoutubeDLTimeout=Timeout|seconds
-YoutubeDLAlways=Always use youtube-dl
-YoutubeDLUpdate=Update
-YoutubeDLParameters=Parameters
+YoutubeDLTimeout=Ajalõpp|sekundit
+YoutubeDLAlways=Kasuta alati youtube-dl
+YoutubeDLUpdate=Uuenda
+YoutubeDLParameters=Parameetrid
 
 [YouTube.Playlists]
 Favorites=Lemmikud
