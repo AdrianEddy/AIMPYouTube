@@ -1,4 +1,4 @@
-﻿[FILE]
+[FILE]
 Author=Олександр (6c6c6) [http://localize.org.ua/]
 Name=Ukrainian (UK)
 VersionID=0
@@ -32,15 +32,15 @@ PlaylistName=Назва списку (додатково)
 Title=YouTube
 Account=Обліковий запис YouTube
 ConnectButton=З’єднатись|Від’єднатись
-General=Залаьне
+General=Загальне
 MonitorURLs=Моніторинг доданих посилань
-MonitorUserPlaylists=Моніторинг списиків відтворення користувача
+MonitorUserPlaylists=Моніторинг списків відтворення користувача
 CheckAtStartup=Перевіряти наявність нових треків при запуску AIMP
 CheckEvery=Перевіряти наявність нових треків кожні|годин
-YoutubeDLTimeout=Timeout|seconds
-YoutubeDLAlways=Always use youtube-dl
-YoutubeDLUpdate=Update
-YoutubeDLParameters=Parameters
+YoutubeDLTimeout=Перерва|секунд
+YoutubeDLAlways=Завжди використовувати youtube-dl
+YoutubeDLUpdate=Оновити
+YoutubeDLParameters=Налаштування
 
 [YouTube.Playlists]
 Favorites=Улюблене
@@ -49,9 +49,9 @@ Likes=Вподобане
 WatchLater=Переглянути пізніше
 
 [YouTube.Exclusions]
-Title=Track exclusions
-Header=Manage track exclusions
-ListHeader=Track title|Duration
-Remove=Remove from exclusions
-RemoveAndAddToPlaylist=Remove from exclusions and add to playlist
-OK=OK
+Title=Виключені треки
+Header=Керуванням виключеними треками
+ListHeader=Заголовок треку|Тривалість
+Remove=Вилучити з виключень
+RemoveAndAddToPlaylist=Вилучити з виключень і додати до списку відтворення
+OK=Гаразд
