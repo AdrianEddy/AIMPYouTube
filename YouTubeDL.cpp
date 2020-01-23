@@ -91,7 +91,9 @@ std::wstring YouTubeDL::GetStreamUrl(const std::wstring &id) {
     const auto error  = readPipe(pipeReadErr);
 
     if (exitCode || result.empty()) {
-        Tools::ShowLastError(L"YouTubeDL::GetStreamUrl(): " + error);
+        if (!error.empty())
+            Tools::ShowLastError(L"YouTubeDL::GetStreamUrl(): " + error);
+
         static bool updated = false;
         if (!updated) {
             updated = true;

@@ -3,8 +3,8 @@
 #endif
 
 #define IDD_SETTINGS                            101
-#define IDB_WHITELOGO                           106
-#define IDB_ORANGELOGO                          107
+#define IDB_GOOGLEBTN                           106
+#define IDB_GOOGLEFONT                          107
 #define IDC_VERSION                             108
 #define IDB_ICON                                110
 #define IDD_ADDURL                              112

@@ -307,20 +307,20 @@ void GetRoundRectPath(Gdiplus::GraphicsPath *pPath, Gdiplus::Rect r, int dia) {
 LRESULT CALLBACK OptionsDialog::ButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
     using namespace Gdiplus;
     struct PaintData {
-        GdiPlusImageLoader Logo;
         std::wstring Text;
         Font Font;
-        Pen BorderPen;
-        ARGB Gradient[2];
         SolidBrush TextColor;
-        Pen LinePen;
         int LogoOffset;
         int Margin;
         int Height;
     };
 
-    static PaintData connect    { { IDB_WHITELOGO,  L"PNG" }, {}, { L"Tahoma", 10, FontStyleBold }, 0xffd05300, { 0xffdc4a33, 0xffcd4127 }, 0xffffffff, 0xffc83f27, 39, 66, 35 };
-    static PaintData disconnect { { IDB_ORANGELOGO, L"PNG" }, {}, { L"Tahoma", 10                }, 0xffbfbfbf, { 0xffffffff, 0xfff1f1f1 }, 0xff333333, 0xffe4e4e4, 33, 56, 27 };
+    static PrivateFontCollection pfc;
+
+    static PaintData connect    { {}, { L"Roboto Medium", 14, FontStyleBold, UnitPixel, &pfc }, 0x8a000000, 33, 72, 46 };
+    static PaintData disconnect { {}, { L"Roboto Medium", 14, FontStyleBold, UnitPixel, &pfc }, 0x8a000000, 33, 72, 46 };
+
+    static GdiPlusImageLoader BtnBackground { IDB_GOOGLEBTN, L"PNG" };
 
     static PaintData *currentBtn = nullptr;
     static OptionsDialog *dialog = nullptr;
@@ -328,9 +328,9 @@ LRESULT CALLBACK OptionsDialog::ButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, 
     static bool customFocus = false;
     static bool connected = false;
 
-    static Rect r;
+    static Rect r, outer;
     static RectF layoutRect;
-    static SolidBrush focusBrush(0x11000000);
+    static SolidBrush focusBrush(0x0A000000);
     static Gdiplus::GraphicsPath borderPath;
     static Gdiplus::StringFormat format;
 
@@ -339,6 +339,13 @@ LRESULT CALLBACK OptionsDialog::ButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, 
             dialog = (OptionsDialog *)dwRefData;
             format.SetAlignment(StringAlignmentCenter);
             format.SetLineAlignment(StringAlignmentCenter);
+            if (HRSRC hResource = ::FindResource(g_hInst, MAKEINTRESOURCE(IDB_GOOGLEFONT), L"TTF")) {
+                if (DWORD dataSize = ::SizeofResource(g_hInst, hResource)) {
+                    if (void *pResourceData = ::LockResource(::LoadResource(g_hInst, hResource))) {
+                        pfc.AddMemoryFont(pResourceData, dataSize);
+                    }
+                }
+            }
         } break;
         case WM_MOUSELEAVE:   mouseOver = false; break;
         case WM_MOUSEMOVE:    mouseOver = true; break;
@@ -362,35 +369,42 @@ LRESULT CALLBACK OptionsDialog::ButtonProc(HWND hWnd, UINT uMsg, WPARAM wParam, 
                 currentBtn = &connect;
             }
             Gdiplus::Graphics(hWnd).MeasureString(currentBtn->Text.c_str(), currentBtn->Text.size(), &currentBtn->Font, PointF(0, 0), &textRect);
-            r.Width = textRect.Width + currentBtn->Margin;
-            r.Height = currentBtn->Height;
+            outer.Width = textRect.Width + currentBtn->Margin;
+            outer.Height = currentBtn->Height;
+            r.X = 3;
+            r.Y = 3;
+            r.Width = outer.Width - 6;
+            r.Height = outer.Height - 6;
             if (connected) {
-                SetWindowPos(hWnd, NULL, rc.right - r.Width - 10, rc.bottom - r.Height - 10, r.Width, r.Height, SWP_NOZORDER);
+                SetWindowPos(hWnd, NULL, rc.right - outer.Width - 10, rc.bottom - outer.Height - 10, outer.Width, outer.Height, SWP_NOZORDER);
             } else {
-                SetWindowPos(hWnd, NULL, rc.left + ((rc.right - rc.left) - r.Width) / 2, rc.top + ((rc.bottom - rc.top) - r.Height) / 2, r.Width, r.Height, SWP_NOZORDER);
+                SetWindowPos(hWnd, NULL, rc.left + ((rc.right - rc.left) - outer.Width) / 2, rc.top + ((rc.bottom - rc.top) - outer.Height) / 2, outer.Width, outer.Height, SWP_NOZORDER);
             }
 
-            GetRoundRectPath(&borderPath, r, 4);
-            layoutRect = RectF(currentBtn->LogoOffset, 0, r.Width - currentBtn->LogoOffset, r.Height);
+            layoutRect = RectF(currentBtn->LogoOffset, 3, r.Width - currentBtn->LogoOffset, r.Height);
+            GetRoundRectPath(&borderPath, r, 6);
         } break;
         case WM_PAINT: {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
             Gdiplus::Graphics g(hdc);
+            g.Clear(0xfff0f0f0);
 
-            LinearGradientBrush linGrBrush(Point(0, 0), Point(0, r.Height), currentBtn->Gradient[mouseOver ? 1 : 0], currentBtn->Gradient[mouseOver ? 0 : 1]);
-            g.FillPath(&linGrBrush, &borderPath);
-            if (customFocus)
+            g.DrawImage(BtnBackground, Gdiplus::RectF(0,                0, 54,                   outer.Height), 0,   0, 108, 92, Gdiplus::UnitPixel); // left side
+            g.DrawImage(BtnBackground, Gdiplus::RectF(54,               0, outer.Width - 54 - 8, outer.Height), 108, 0, 5,   92, Gdiplus::UnitPixel); // middle stretch
+            g.DrawImage(BtnBackground, Gdiplus::RectF(outer.Width - 8,  0, 8,                    outer.Height), 108, 0, 16,  92, Gdiplus::UnitPixel); // right side
+
+            if (customFocus || mouseOver)
                 g.FillPath(&focusBrush, &borderPath);
 
-            g.DrawImage(currentBtn->Logo, 10, 7, currentBtn->Logo->GetWidth(), currentBtn->Logo->GetHeight());
-            g.DrawLine(&currentBtn->LinePen, currentBtn->LogoOffset, 0, currentBtn->LogoOffset, r.Height);
+            g.SetTextRenderingHint(TextRenderingHintAntiAlias);
             g.DrawString(currentBtn->Text.c_str(), currentBtn->Text.size(), &currentBtn->Font, layoutRect, &format, &currentBtn->TextColor);
-            g.DrawPath(&currentBtn->BorderPen, &borderPath);
 
             EndPaint(hWnd, &ps);
             return TRUE;
         }
+        case WM_ERASEBKGND:
+            return TRUE;
         case WM_SETCURSOR:
             SetCursor(LoadCursor(NULL, IDC_HAND));
             return TRUE;

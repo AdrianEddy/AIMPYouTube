@@ -547,7 +547,9 @@ void YouTubeAPI::LoadSignatureDecoder() {
 
                 // Taken from youtube-dl
                 // https://github.com/ytdl-org/youtube-dl/blob/master/youtube_dl/extractor/youtube.py#L1342
-                std::vector<std::regex> patterns {
+                static std::vector<std::regex> patterns {
+                    std::regex(R"PATTERN(\b([a-zA-Z0-9$]{2})\s*=\s*function\(\s*a\s*\)\s*\{\s*a\s*=\s*a\.split\(\s*""\s*\))PATTERN"),
+                    std::regex(R"PATTERN(\b[a-d]\s*&&\s*\([a-d]\s*=\s*([a-zA-Z0-9$]+)\(\s*decodeURIComponent\s*\([a-d]\)\),\s*[a-d]\.set\([^,]+\s*,\s*enc)PATTERN"),
                     std::regex(R"PATTERN(\b[cs]\s*&&\s*[adf]\.set\([^,]+\s*,\s*encodeURIComponent\s*\(\s*([a-zA-Z0-9$]+)\()PATTERN"),
                     std::regex(R"PATTERN(\b[a-zA-Z0-9]+\s*&&\s*[a-zA-Z0-9]+\.set\([^,]+\s*,\s*encodeURIComponent\s*\(\s*([a-zA-Z0-9$]+)\()PATTERN"),
                     std::regex(R"PATTERN(([a-zA-Z0-9$]+)\s*=\s*function\(\s*a\s*\)\s*\{\s*a\s*=\s*a\.split\(\s*""\s*\))PATTERN")

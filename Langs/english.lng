@@ -31,7 +31,7 @@ PlaylistName=Playlist name (optional)
 [YouTube.Options]
 Title=YouTube
 Account=YouTube account
-ConnectButton=Connect|Disconnect
+ConnectButton=Sign in with Google|Sign out
 General=General
 MonitorURLs=Monitor added URLs
 MonitorUserPlaylists=Monitor user's playlists
