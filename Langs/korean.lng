@@ -37,10 +37,10 @@ MonitorURLs=추가된 URL 모니터링
 MonitorUserPlaylists=사용자의 재생 목록 모니터링
 CheckAtStartup=AIMP 시작시 새 트랙 확인
 CheckEvery=매번 새로운 트랙 확인|시간
-YoutubeDLTimeout=Timeout|seconds
-YoutubeDLAlways=Always use youtube-dl
-YoutubeDLUpdate=Update
-YoutubeDLParameters=Parameters
+YoutubeDLTimeout=시간제한|초
+YoutubeDLAlways=항상 youtube-dl 사용
+YoutubeDLUpdate=업데이트
+YoutubeDLParameters=매개변수
 
 [YouTube.Playlists]
 Favorites=즐겨찾기
