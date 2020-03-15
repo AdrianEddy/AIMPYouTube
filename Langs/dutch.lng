@@ -1,5 +1,5 @@
 ﻿[FILE]
-Author=Peter Mulder (peter.mulder.1981@gmail.com)
+Author=Peter Mulder
 Help=
 Icon=
 LangId=1043
@@ -7,8 +7,8 @@ Name=Nederlands (NL)
 VersionID=0
 
 [YouTube]
-ConnectStatusError=Sorry, er is een fout opgetreden|Kon geen verbinding maken met YouTube-account. Keer a.u.b. terug naar AIMP en probeer het opnieuw.
-ConnectStatusOK=Authorisatie gelukt|Je kunt nu dit browservenster sluiten en terugkeren naar AIMP.
+ConnectStatusError=Sorry, er is een fout opgetreden|Kon geen verbinding maken met het YouTube-account. Keer a.u.b. terug naar AIMP en probeer het opnieuw.
+ConnectStatusOK=Toegang verlenen gelukt|Je kunt nu dit browservenster sluiten en terugkeren naar AIMP.
 YouTubeLang=en
 
 [YouTube.AddURL]
@@ -32,28 +32,28 @@ Error=Fout
 
 [YouTube.Options]
 Account=YouTube-account
-CheckAtStartup=Bij opstarten van AIMP op nieuwe nummers controleren
+CheckAtStartup=Bij starten van AIMP op nieuwe nummers controleren
 CheckEvery=Op nieuwe nummers controleren elke|uur
 ConnectButton=Verbinden|Loskoppelen
 General=Algemeen
 MonitorURLs=Toegevoegde URL's controleren
 MonitorUserPlaylists=Afspeellijst van gebruiker controleren
 Title=YouTube
-YoutubeDLTimeout=Timeout|seconds
-YoutubeDLAlways=Always use youtube-dl
-YoutubeDLUpdate=Update
+YoutubeDLTimeout=Timeout|seconden
+YoutubeDLAlways=Altijd youtube-dl gebruiken
+YoutubeDLUpdate=Bijwerken
 YoutubeDLParameters=Parameters
 
 [YouTube.Playlists]
 Favorites=Favorieten
-Likes=Likes
-Uploads=Uploads
+Likes=Gelikete video's
+Uploads=Je video's
 WatchLater=Later bekijken
 
 [YouTube.Exclusions]
-Title=Track exclusions
-Header=Manage track exclusions
-ListHeader=Track title|Duration
-Remove=Remove from exclusions
-RemoveAndAddToPlaylist=Remove from exclusions and add to playlist
-OK=OK
+Title=Uitsluitingen voor nummers
+Header=Uitsluitingen voor nummers beheren
+ListHeader=Titel van nummer|Duur
+Remove=Verwijderen uit uitsluitingen
+RemoveAndAddToPlaylist=Verwijderen uit uitsluitingen en toevoegen aan afspeellijst
+OK=Oké
