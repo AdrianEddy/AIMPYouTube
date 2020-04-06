@@ -532,7 +532,7 @@ void YouTubeAPI::LoadSignatureDecoder() {
 
     std::wstring ua(L"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36");
     AimpHTTP::Get(L"https://www.youtube.com/\r\nUser-Agent: " + ua, [&](unsigned char *data1, int) {
-        std::string player = Tools::FindBetween((char *)data1, "\"js\":\"", "\"");
+        std::string player = Tools::FindBetween((char *)data1, "\"jsUrl\":\"", "\"");
         if (!player.empty()) {
             Tools::ReplaceString("\\/", "/", player);
             if (player.find("http") == std::string::npos)
@@ -548,11 +548,11 @@ void YouTubeAPI::LoadSignatureDecoder() {
                 // Taken from youtube-dl
                 // https://github.com/ytdl-org/youtube-dl/blob/master/youtube_dl/extractor/youtube.py#L1342
                 static std::vector<std::regex> patterns {
-                    std::regex(R"PATTERN(\b([a-zA-Z0-9$]{2})\s*=\s*function\(\s*a\s*\)\s*\{\s*a\s*=\s*a\.split\(\s*""\s*\))PATTERN"),
-                    std::regex(R"PATTERN(\b[a-d]\s*&&\s*\([a-d]\s*=\s*([a-zA-Z0-9$]+)\(\s*decodeURIComponent\s*\([a-d]\)\),\s*[a-d]\.set\([^,]+\s*,\s*enc)PATTERN"),
-                    std::regex(R"PATTERN(\b[cs]\s*&&\s*[adf]\.set\([^,]+\s*,\s*encodeURIComponent\s*\(\s*([a-zA-Z0-9$]+)\()PATTERN"),
-                    std::regex(R"PATTERN(\b[a-zA-Z0-9]+\s*&&\s*[a-zA-Z0-9]+\.set\([^,]+\s*,\s*encodeURIComponent\s*\(\s*([a-zA-Z0-9$]+)\()PATTERN"),
-                    std::regex(R"PATTERN(([a-zA-Z0-9$]+)\s*=\s*function\(\s*a\s*\)\s*\{\s*a\s*=\s*a\.split\(\s*""\s*\))PATTERN")
+                    std::regex(R"R(\b([a-zA-Z0-9$]{2})\s*=\s*function\(\s*a\s*\)\s*\{\s*a\s*=\s*a\.split\(\s*""\s*\))R"),
+                    std::regex(R"R(\b[a-d]\s*&&\s*\([a-d]\s*=\s*([a-zA-Z0-9$]+)\(\s*decodeURIComponent\s*\([a-d]\)\),\s*[a-d]\.set\([^,]+\s*,\s*enc)R"),
+                    std::regex(R"R(\b[cs]\s*&&\s*[adf]\.set\([^,]+\s*,\s*encodeURIComponent\s*\(\s*([a-zA-Z0-9$]+)\()R"),
+                    std::regex(R"R(\b[a-zA-Z0-9]+\s*&&\s*[a-zA-Z0-9]+\.set\([^,]+\s*,\s*encodeURIComponent\s*\(\s*([a-zA-Z0-9$]+)\()R"),
+                    std::regex(R"R(([a-zA-Z0-9$]+)\s*=\s*function\(\s*a\s*\)\s*\{\s*a\s*=\s*a\.split\(\s*""\s*\))R")
                 };
                 std::smatch m;
                 std::string funcsig;
