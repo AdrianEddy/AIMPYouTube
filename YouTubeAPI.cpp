@@ -415,7 +415,7 @@ void YouTubeAPI::ResolveUrl(const std::wstring &url, const std::wstring &playlis
 std::wstring YouTubeAPI::GetStreamUrl(const std::wstring &id) {
     std::wstring stream_url;
     if (!YouTubeDL::Force) {
-        std::wstring url2(L"https://www.youtube.com/get_video_info?video_id=" + id + L"&el=detailpage&sts=16511");
+        std::wstring url2(L"https://www.youtube.com/get_video_info?video_id=" + id + L"&eurl=https%3A%2F%2Fyoutube.googleapis.com%2Fv%2F" + id + L"&sts=18389&html5=1");
         AimpHTTP::Get(url2, [&](unsigned char *data, int size) {
             if (char *streams = strstr((char *)data, "player_response=")) {
                 streams += 16;
@@ -469,10 +469,11 @@ std::wstring YouTubeAPI::GetStreamUrl(const std::wstring &id) {
 
                             std::string stream;
                             if (px.HasMember("url")) stream = px["url"].GetString();
-                            if (stream.empty() && px.HasMember("cipher")) {
+                            if (stream.empty() && (px.HasMember("cipher") || px.HasMember("signatureCipher"))) {
                                 std::string s, sig, sp = "signature";
+                                std::string cipher = px.HasMember("cipher")? px["cipher"].GetString() : px["signatureCipher"].GetString();
 
-                                Tools::SplitString(px["cipher"].GetString(), "&", [&](const std::string &token) {
+                                Tools::SplitString(cipher, "&", [&](const std::string &token) {
                                          if (token.find("url=")  == 0) { stream = Tools::UrlDecode(token.substr(4)); }
                                     else if (token.find("s=")    == 0) { s      = Tools::UrlDecode(token.substr(2)); YouTubeAPI::DecodeSignature(s); }
                                     else if (token.find("sp=")   == 0) { sp     = Tools::UrlDecode(token.substr(3)); }
@@ -525,12 +526,12 @@ std::wstring YouTubeAPI::GetStreamUrl(const std::wstring &id) {
 
 void YouTubeAPI::LoadSignatureDecoder() {
     static std::map<std::string, std::function<void(std::string &s, int param)>> mutatorTypes {
-        { "swap",    [](std::string &s, int param) { std::swap(s[0], s[param]);        } },
+        { "swap",    [](std::string &s, int param) { std::swap(s[0], s[param % s.size()]); } },
         { "erase",   [](std::string &s, int param) { s.erase(0, param);                } },
         { "reverse", [](std::string &s, int param) { std::reverse(s.begin(), s.end()); } },
     };
 
-    std::wstring ua(L"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.117 Safari/537.36");
+    std::wstring ua(L"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36");
     AimpHTTP::Get(L"https://www.youtube.com/\r\nUser-Agent: " + ua, [&](unsigned char *data1, int) {
         std::string player = Tools::FindBetween((char *)data1, "\"jsUrl\":\"", "\"");
         if (!player.empty()) {
