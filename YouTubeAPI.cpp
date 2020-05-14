@@ -415,7 +415,7 @@ void YouTubeAPI::ResolveUrl(const std::wstring &url, const std::wstring &playlis
 std::wstring YouTubeAPI::GetStreamUrl(const std::wstring &id) {
     std::wstring stream_url;
     if (!YouTubeDL::Force) {
-        std::wstring url2(L"https://www.youtube.com/get_video_info?video_id=" + id + L"&eurl=https%3A%2F%2Fyoutube.googleapis.com%2Fv%2F" + id + L"&sts=18389&html5=1");
+        std::wstring url2(L"https://www.youtube.com/get_video_info?video_id=" + id + L"&eurl=https%3A%2F%2Fyoutube.googleapis.com%2Fv%2F" + id + L"&html5=1");
         AimpHTTP::Get(url2, [&](unsigned char *data, int size) {
             if (char *streams = strstr((char *)data, "player_response=")) {
                 streams += 16;
