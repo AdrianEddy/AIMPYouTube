@@ -1,0 +1,57 @@
+﻿[FILE]
+Author=YanJuna Sun
+Name=Chinese (Simplified)
+VersionID=0
+LangId=2052
+
+[YouTube]
+ConnectStatusOK=授权已批准|您现在可关闭此浏览器窗口并返回到 AIMP。
+ConnectStatusError=抱歉，发生错误|无法连结到 YouTube 账号。请返回到 AIMP 并再试。
+YouTubeLang=zh-CN
+
+[YouTube.Messages]
+Error=错误
+CantResolve=无法解析此 URL。
+
+[YouTube.Menu]
+AddURL=YouTube URL
+OpenInBrowser=在网络浏览器内打开
+AddToExclusions=添加到排除
+AddTo=添加到
+RemoveFrom=移除从
+CheckForNewItems=检查新视频
+
+[YouTube.AddURL]
+Title=添加 YouTube URL
+URL=YouTube URL
+CreateNew=创建新播放列表
+OK=确定
+PlaylistName=播放列表名称（可选）
+
+[YouTube.Options]
+Title=YouTube
+Account=YouTube 账号
+ConnectButton=用 Google 登录|登出
+General=常规
+MonitorURLs=监视添加的 URL
+MonitorUserPlaylists=监视用户播放列表
+CheckAtStartup=AIMP 启动时检查新曲目
+CheckEvery=检查新曲目，每|个小时
+YoutubeDLTimeout=超时|秒
+YoutubeDLAlways=始终使用 youtube-dl
+YoutubeDLUpdate=更新
+YoutubeDLParameters=参数
+
+[YouTube.Playlists]
+Favorites=收藏
+Uploads=上传
+Likes=赞
+WatchLater=稍后观看
+
+[YouTube.Exclusions]
+Title=曲目排除
+Header=管理曲目排除
+ListHeader=曲目标题|持续时间
+Remove=从排除内移除
+RemoveAndAddToPlaylist=从排除内移除并添加到播放列表
+OK=确定
