@@ -1,0 +1,57 @@
+﻿[FILE]
+Author=maboroshin
+Name=Japanese (JA)
+VersionID=0
+LangId=1041
+
+[YouTube]
+ConnectStatusOK=認証されました。|このブラウザーウィンドウを閉じ、AIMP を使用できます。
+ConnectStatusError=エラーが発生しました|YouTube アカウントに接続できませんでした。一度 AIMP に戻ってから再度お試しください。
+YouTubeLang=ja
+
+[YouTube.Messages]
+Error=エラー
+CantResolve=このURLを変換できませんでした。
+
+[YouTube.Menu]
+AddURL=YouTube URL
+OpenInBrowser=ウェブブラウザーで開く
+AddToExclusions=除外に追加
+AddTo=追加先
+RemoveFrom=削除元
+CheckForNewItems=新たな動画を確認
+
+[YouTube.AddURL]
+Title=YouTube の URL を追加
+URL=YouTube URL
+CreateNew=新規再生リストを作成
+OK=OK
+PlaylistName=再生リスト名 (任意)
+
+[YouTube.Options]
+Title=YouTube
+Account=YouTube アカウント
+ConnectButton=Google にログイン|ログアウト
+General=一般
+MonitorURLs=追加された URL を監視
+MonitorUserPlaylists=ユーザーの再生リストを監視
+CheckAtStartup=AIMP 起動時に新たな曲を確認
+CheckEvery=時間ごとに新たな曲を確認|時間
+YoutubeDLTimeout=タイムアウト|秒
+YoutubeDLAlways=常に youtube-dl を使う
+YoutubeDLUpdate=更新
+YoutubeDLParameters=引数
+
+[YouTube.Playlists]
+Favorites=お気に入り
+Uploads=アップロード
+Likes=高評価
+WatchLater=後で見る
+
+[YouTube.Exclusions]
+Title=トラックの除外
+Header=トラックの除外を管理
+ListHeader=曲名|長さ
+Remove=除外から削除
+RemoveAndAddToPlaylist=除外から削除しプレイリストに追加
+OK=OK
