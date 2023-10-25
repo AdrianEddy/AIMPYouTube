@@ -1,0 +1,57 @@
+﻿[FILE]
+Author=Lieba Natur Brilian
+Name=Indonesian (ID)
+VersionID=0
+LangId=1057
+
+[YouTube]
+ConnectStatusOK=Otorisasi diijinkan|Anda bisa menutup jendela peramban ini dan kembali ke AIMP
+ConnectStatusError=Maaf, terjadi masalah|Tidak dapat menyambungkan ke akun YouTube. Kembali ke AIMP dan coba lagi.
+YouTubeLang=en
+
+[YouTube.Messages]
+Error=Error
+CantResolve=Tidak dapat memperbaiki URL ini.
+
+[YouTube.Menu]
+AddURL=URL YouTube
+OpenInBrowser=Buka di peramban web
+AddToExclusions=Tambahkan ke pengecualian
+AddTo=Tambahkan ke
+RemoveFrom=Hapus dari
+CheckForNewItems=Cek video baru
+
+[YouTube.AddURL]
+Title=Tambah URL YouTube
+URL=URL YouTube
+CreateNew=Buat daftar putar baru
+OK=OK
+PlaylistName=Nama daftar putar (opsional)
+
+[YouTube.Options]
+Title=YouTube
+Account=Akun YouTube
+ConnectButton=Masuk dengan Google|Keluar
+General=Umum
+MonitorURLs=Pantau URL yang sudah ditambahkan
+MonitorUserPlaylists=Pantau playlist pengguna
+CheckAtStartup=Periksa trek terbaru saat AIMP dijalankan
+CheckEvery=Periksa trek terbaru setiap|jam
+YoutubeDLTimeout=Timeout|detik
+YoutubeDLAlways=Selalu gunakan youtube-dl
+YoutubeDLUpdate=Perbarui
+YoutubeDLParameters=Parameter
+
+[YouTube.Playlists]
+Favorites=Favorit
+Uploads=Diunggah
+Likes=Suka
+WatchLater=Tonton nanti
+
+[YouTube.Exclusions]
+Title=Pengecualian
+Header=Kelola trek yang dikecualikan
+ListHeader=Judul trek|Durasi
+Remove=Hapus dari pengecualian
+RemoveAndAddToPlaylist=Hapus dari pengecualian dan tambahkan ke daftar putar
+OK=OK
