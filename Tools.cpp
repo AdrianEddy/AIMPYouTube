@@ -11,6 +11,9 @@
 #include <algorithm>
 #include <process.h>
 
+#include "SDK/apiGUI.h"
+#include "AIMPString.h"
+
 static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> wStrConverter;
 
 std::wstring Tools::ToWString(const std::string &string) {
@@ -55,8 +58,14 @@ void Tools::ShowLastError(std::wstring message) {
     if (!error.empty())
         message += L" - " + error;
 
-    Tools::ExecuteInNewThread([message] {
-        MessageBox(Plugin::instance()->GetMainWindowHandle(), message.c_str(), Plugin::instance()->Lang(L"YouTube.Messages\\Error").c_str(), MB_OK | MB_ICONERROR);
+    Plugin::instance()->ExecuteInMainThread([message] {
+        IAIMPUIMessageDialog* dialog = nullptr;
+        IAIMPString* caption = nullptr;
+        if (SUCCEEDED(Plugin::instance()->core()->QueryInterface(IID_IAIMPUIMessageDialog, reinterpret_cast<void**>(&dialog))) &&
+            SUCCEEDED(Plugin::instance()->LangAIMP(&caption, L"YouTube.Messages\\Error"))) {
+            HRESULT r = dialog->Execute(Plugin::instance()->GetMainWindowHandle(), caption, AIMPString(message), MB_OK | MB_ICONERROR);
+            caption->Release();
+        }
     });
 }
 
