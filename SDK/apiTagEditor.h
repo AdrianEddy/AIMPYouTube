@@ -1,13 +1,12 @@
 /************************************************/
 /*                                              */
 /*          AIMP Programming Interface          */
-/*               v3.60 build 1426               */
+/*               v5.30 build 2500               */
 /*                                              */
 /*                Artem Izmaylov                */
-/*                (C) 2006-2015                 */
+/*                (C) 2006-2023                 */
 /*                 www.aimp.ru                  */
-/*              ICQ: 345-908-513                */
-/*            Mail: support@aimp.ru             */
+/*               support@aimp.ru                */
 /*                                              */
 /************************************************/
 
@@ -18,10 +17,13 @@
 #include <unknwn.h>
 #include "apiObjects.h"
 #include "apiFileManager.h"
+#include "apiThreading.h"
 
 static const GUID IID_IAIMPFileTag 		        = {0x41494D50, 0x4669, 0x6C65, 0x54, 0x61, 0x67, 0x00, 0x00, 0x00, 0x00, 0x00};
 static const GUID IID_IAIMPFileTagEditor        = {0x41494D50, 0x4669, 0x6C65, 0x54, 0x61, 0x67, 0x45, 0x64, 0x69, 0x74, 0x00};
 static const GUID IID_IAIMPServiceFileTagEditor = {0x41494D50, 0x5372, 0x7654, 0x61, 0x67, 0x45, 0x64, 0x69, 0x74, 0x00, 0x00};
+static const GUID IID_IAIMPServiceFindTagsOnline = {0x41494D50, 0x5372, 0x7646, 0x69, 0x6E, 0x64, 0x54, 0x61, 0x67, 0x73, 0x00};
+static const GUID IID_IAIMPExtensionTagsProvider = {0x41494D50, 0x4578, 0x7446, 0x69, 0x6E, 0x64, 0x54, 0x61, 0x67, 0x73, 0x32};
 
 // PropertyID for the IAIMPFileTag
 const int AIMP_FILETAG_PROPID_BASE             = 100;
@@ -36,6 +38,8 @@ const int AIMP_FILETAG_ID_ID3v2  = 3;
 const int AIMP_FILETAG_ID_MP4    = 4;
 const int AIMP_FILETAG_ID_VORBIS = 5;
 const int AIMP_FILETAG_ID_WMA    = 6;
+
+typedef void (CALLBACK TAIMPServiceFindTagsOnlineAlbumInfoReceiveProc)(IAIMPFileInfo *image, void *data);
 
 /* IAIMPFileTag */
 
@@ -56,6 +60,27 @@ class IAIMPFileTagEditor: public IUnknown
 		virtual HRESULT WINAPI SetToAll(IAIMPFileInfo *Info) = 0;
 		// Save
 		virtual HRESULT WINAPI Save() = 0;
+};
+
+/* IAIMPExtensionTagsProvider */
+
+class IAIMPExtensionTagsProvider: public IUnknown
+{
+	public:
+		virtual HRESULT WINAPI GetName(IAIMPString **Source) = 0;
+		virtual HRESULT WINAPI GetSupportedFields(int* *Fields, int* Count) = 0;
+		// Commands
+		virtual HRESULT WINAPI FindAlbums(IAIMPString *Query, IAIMPTaskOwner* Owner, IAIMPErrorInfo* ErrorInfo,
+			TAIMPServiceFindTagsOnlineAlbumInfoReceiveProc* ReceiveProc, void *ReceiveProcData) = 0;
+		virtual HRESULT WINAPI FindTracks(IAIMPFileInfo* AlbumInfo, IAIMPTaskOwner* Owner,
+			IAIMPErrorInfo* ErrorInfo, IAIMPObjectList** TracksInfo) = 0;
+};
+
+/* IAIMPServiceFindTagsOnline */
+
+class IAIMPServiceFindTagsOnline: public IUnknown
+{
+	public:
 };
 
 /* IAIMPServiceFileTagEditor */
