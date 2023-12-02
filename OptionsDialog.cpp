@@ -804,7 +804,7 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
                 break;
                 case IDC_VIEWLOGS:
                     if (HIWORD(wParam) == BN_CLICKED) {
-                        // TODO: Open the logs file
+                        ShellExecuteW(nullptr, nullptr, Tools::GetLogPath().c_str(), nullptr, 0, SW_SHOW);
                     }
                 break;
             }

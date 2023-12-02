@@ -30,6 +30,7 @@ struct Tools {
     static void OutputLastError(std::wstring *out = nullptr);
     static void ShowLastError(std::wstring message);
 
+    static std::wstring GetLogPath();
     static void ExecuteInNewThread(std::function<void()> &&cb);
 
     static bool HideErrors;

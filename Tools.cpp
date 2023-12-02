@@ -11,6 +11,8 @@
 #include <string>
 #include <algorithm>
 #include <process.h>
+#include <fstream>
+#include <iostream>
 
 #include "SDK/apiGUI.h"
 #include "AIMPString.h"
@@ -57,10 +59,30 @@ void Tools::OutputLastError(std::wstring *out) {
 
 void Tools::ShowLastError(std::wstring message) {
     std::wstring error;
+    std::wofstream logStream;
+    SYSTEMTIME time;
+    int timeStringLength = 16;
+    std::unique_ptr<WCHAR[]> timeString(new WCHAR[timeStringLength]);
+    int timeSize;
+    int dateSize;
+    GetLocalTime(&time);
     OutputLastError(&error);
-    if (!error.empty())
+    if (!error.empty()) {
         message += L" - " + error;
+        message.erase(std::find_if(
+            message.rbegin(),
+            message.rend(),
+            std::not1(std::ptr_fun<int, int>(std::isspace))).base(), message.end());
+    }
 
+    // Currently overwrites, want to append in the future (requires a size limit)
+    logStream.open(GetLogPath());
+    dateSize = GetDateFormatEx(LOCALE_NAME_INVARIANT, 0, &time, L"yyyy-MM-dd", timeString.get(), timeStringLength, nullptr);
+    logStream.write(timeString.get(), dateSize);
+    timeSize = GetTimeFormatEx(LOCALE_NAME_INVARIANT, 0, &time, L"HH:mm:ss:", timeString.get(), timeStringLength);
+    logStream.write(timeString.get(), timeSize);
+    logStream << message << std::endl;
+    logStream.close();
     if (!HideErrors) {
         Plugin::instance()->ExecuteInMainThread([message] {
             IAIMPUIMessageDialog* dialog = nullptr;
@@ -214,6 +236,17 @@ Config::TrackInfo *Tools::TrackInfo(const std::wstring &id) {
 
 Config::TrackInfo *Tools::TrackInfo(IAIMPString *FileName) {
     return TrackInfo(Tools::TrackIdFromUrl(FileName->GetData()));
+}
+
+std::wstring Tools::GetLogPath() {
+    std::wstring ret;
+    IAIMPString* value = nullptr;
+    if (SUCCEEDED(Plugin::instance()->core()->GetPath(AIMP_CORE_PATH_PROFILE, &value))) {
+        ret = value->GetData();
+        ret += L"AimpYouTube.log";
+        value->Release();
+    }
+    return ret;
 }
 
 void Tools::ExecuteInNewThread(std::function<void()> &&cb) {
