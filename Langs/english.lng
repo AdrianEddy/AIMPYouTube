@@ -41,6 +41,9 @@ YoutubeDLTimeout=Timeout|seconds
 YoutubeDLAlways=Always use youtube-dl
 YoutubeDLUpdate=Update
 YoutubeDLParameters=Parameters
+Log=Logging
+DontShowErrors=Don't show errors
+LogViewButton=View Logs
 
 [YouTube.Playlists]
 Favorites=Favorites

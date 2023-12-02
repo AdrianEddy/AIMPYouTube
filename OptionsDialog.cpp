@@ -74,11 +74,15 @@ void WINAPI OptionsDialog::Notification(int ID) {
             SetDlgItemText(m_handle, IDC_MAINFRAME,       m_plugin->Lang(L"YouTube.Options\\Title").c_str());
             SetDlgItemText(m_handle, IDC_AUTHGROUPBOX,    m_plugin->Lang(L"YouTube.Options\\Account").c_str());
             SetDlgItemText(m_handle, IDC_MONITORGROUPBOX, m_plugin->Lang(L"YouTube.Options\\MonitorURLs").c_str());
+            SetDlgItemText(m_handle, IDC_LOGGROUPBOX,     m_plugin->Lang(L"YouTube.Options\\Log").c_str());
             SetDlgItemText(m_handle, IDC_MONITORPLAYLISTS,m_plugin->Lang(L"YouTube.Options\\MonitorUserPlaylists").c_str());
             SetDlgItemText(m_handle, IDC_CHECKONSTARTUP,  m_plugin->Lang(L"YouTube.Options\\CheckAtStartup").c_str());
+            SetDlgItemText(m_handle, IDC_DONTSHOWERRORS,  m_plugin->Lang(L"YouTube.Options\\DontShowErrors").c_str());
+            SetDlgItemText(m_handle, IDC_VIEWLOGS,        m_plugin->Lang(L"YouTube.Options\\LogViewButton").c_str());
             SetDlgItemText(m_handle, IDC_CHECKEVERY,      checkEveryText0.c_str());
             SetDlgItemText(m_handle, IDC_HOURS,           checkEveryText1.c_str());
             SetDlgItemText(m_handle, IDC_MANAGEEXCLUSIONS,m_plugin->Lang(L"YouTube.Exclusions\\Header").c_str());
+            SendDlgItemMessage(m_handle, IDC_VIEWLOGS, WM_UPDATELOCALE, 0, 0);
 
             std::wstring ytdlTimeoutText0 = m_plugin->Lang(L"YouTube.Options\\YoutubeDLTimeout", 0);
             std::wstring ytdlTimeoutText1 = m_plugin->Lang(L"YouTube.Options\\YoutubeDLTimeout", 1);
@@ -137,6 +141,8 @@ void WINAPI OptionsDialog::Notification(int ID) {
             SendDlgItemMessage(m_handle, IDC_YTDLTIMEOUTSPIN, UDM_SETPOS32, 0, Config::GetInt32(L"YouTubeDLTimeout", YouTubeDL::Timeout));
             SendDlgItemMessage(m_handle, IDC_YTDLFORCE, BM_SETCHECK, Config::GetInt32(L"YouTubeDLAlways", YouTubeDL::Force), 0);
 
+            SendDlgItemMessage(m_handle, IDC_DONTSHOWERRORS, BM_SETCHECK, Config::GetInt32(L"DontShowErrors", YouTubeDL::HideErrors), 0);
+
             BOOL enable = SendDlgItemMessage(m_handle, IDC_CHECKEVERY, BM_GETCHECK, 0, 0) == BST_CHECKED;
             EnableWindow(GetDlgItem(m_handle, IDC_CHECKEVERYVALUE), enable);
             EnableWindow(GetDlgItem(m_handle, IDC_CHECKEVERYVALUESPIN), enable);
@@ -164,6 +170,8 @@ void WINAPI OptionsDialog::Notification(int ID) {
 
                 Config::SetInt32(L"YouTubeDLAlways", YouTubeDL::Force = (SendDlgItemMessage(m_handle, IDC_YTDLFORCE, BM_GETCHECK, 0, 0) == BST_CHECKED));
                 Config::SetInt32(L"YouTubeDLTimeout", YouTubeDL::Timeout = SendDlgItemMessage(m_handle, IDC_YTDLTIMEOUTSPIN, UDM_GETPOS32, 0, 0));
+
+                Config::SetInt32(L"DontShowErrors", YouTubeDL::HideErrors = (SendDlgItemMessage(m_handle, IDC_DONTSHOWERRORS, BM_GETCHECK, 0, 0) == BST_CHECKED));
 
                 WCHAR buffer[4096];
                 SendDlgItemMessage(m_handle, IDC_YTDLPARAMS, WM_GETTEXT, 4096, (LPARAM)buffer);
@@ -675,6 +683,7 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
             SetWindowSubclass(GetDlgItem(hwnd, IDC_AUTHGROUPBOX),    GroupBoxProc, 0, /*OptionsDialog*/lParam); SendDlgItemMessage(hwnd, IDC_AUTHGROUPBOX, WM_SUBCLASSINIT, 0, 0);
             SetWindowSubclass(GetDlgItem(hwnd, IDC_MONITORGROUPBOX), GroupBoxProc, 0, /*OptionsDialog*/lParam); SendDlgItemMessage(hwnd, IDC_MONITORGROUPBOX, WM_SUBCLASSINIT, 0, 0);
             SetWindowSubclass(GetDlgItem(hwnd, IDC_YTDLGROUPBOX),    GroupBoxProc, 0, /*OptionsDialog*/lParam); SendDlgItemMessage(hwnd, IDC_YTDLGROUPBOX, WM_SUBCLASSINIT, 0, 0);
+            SetWindowSubclass(GetDlgItem(hwnd, IDC_LOGGROUPBOX),     GroupBoxProc, 0, /*OptionsDialog*/lParam); SendDlgItemMessage(hwnd, IDC_LOGGROUPBOX, WM_SUBCLASSINIT, 0, 0);
             SetWindowSubclass(GetDlgItem(hwnd, IDC_AVATAR),          AvatarProc,   0, /*OptionsDialog*/lParam); SendDlgItemMessage(hwnd, IDC_AVATAR, WM_SUBCLASSINIT, 0, 0);
             SetWindowSubclass(GetDlgItem(hwnd, IDC_VERSION),         LinkProc,     0, /*OptionsDialog*/lParam); SendDlgItemMessage(hwnd, IDC_VERSION, WM_SUBCLASSINIT, 0, 0);
             SetWindowSubclass(GetDlgItem(hwnd, IDC_MANAGEEXCLUSIONS),LinkProc,     0, /*OptionsDialog*/lParam); SendDlgItemMessage(hwnd, IDC_MANAGEEXCLUSIONS, WM_SUBCLASSINIT, 0, 0);
@@ -694,6 +703,7 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
             HWND group = GetDlgItem(hwnd, IDC_AUTHGROUPBOX);    GetClientRect(group, &rc2); SetWindowPos(group, NULL, 0, 0, rc.right - 21, rc2.bottom, SWP_NOMOVE | SWP_NOZORDER);
                  group = GetDlgItem(hwnd, IDC_MONITORGROUPBOX); GetClientRect(group, &rc2); SetWindowPos(group, NULL, 0, 0, rc.right - 21, rc2.bottom, SWP_NOMOVE | SWP_NOZORDER);
                  group = GetDlgItem(hwnd, IDC_YTDLGROUPBOX);    GetClientRect(group, &rc2); SetWindowPos(group, NULL, 0, 0, rc.right - 21, rc2.bottom, SWP_NOMOVE | SWP_NOZORDER);
+                 group = GetDlgItem(hwnd, IDC_LOGGROUPBOX);     GetClientRect(group, &rc2); SetWindowPos(group, NULL, 0, 0, rc.right - 21, rc2.bottom, SWP_NOMOVE | SWP_NOZORDER);
             HWND version = GetDlgItem(hwnd, IDC_VERSION);
             GetClientRect(version, &rc2);
             SetWindowPos(version, NULL, rc.right - 106, rc.bottom - rc2.bottom - 7, 100, rc2.bottom, SWP_NOZORDER);
@@ -707,6 +717,12 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
             HWND ytdlUpdate = GetDlgItem(hwnd, IDC_YTDLUPDATE);
             GetClientRect(ytdlUpdate, &rc2);
             SetWindowPos(ytdlUpdate, NULL, rc.right - rc2.right - 7, rc.bottom - rc2.bottom - 7, rc2.right, rc2.bottom, SWP_NOZORDER);
+
+            GetWindowRect(GetDlgItem(hwnd, IDC_LOGGROUPBOX), &rc);
+            MapWindowPoints(HWND_DESKTOP, hwnd, (LPPOINT)&rc, 2);
+            HWND viewLogs = GetDlgItem(hwnd, IDC_VIEWLOGS);
+            GetClientRect(viewLogs, &rc2);
+            SetWindowPos(viewLogs, NULL, rc.right - rc2.right - 7, rc.bottom - rc2.bottom - 7, rc2.right, rc2.bottom, SWP_NOZORDER);
 
             return TRUE;
         } break;
@@ -769,6 +785,7 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
                 case IDC_CHECKONSTARTUP:
                 case IDC_YTDLFORCE:
                 case IDC_CHECKEVERY:
+                case IDC_DONTSHOWERRORS:
                     if (HIWORD(wParam) == BN_CLICKED) {
                         dialog->OptionsModified();
 
@@ -783,6 +800,11 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
                 case IDC_YTDLUPDATE:
                     if (HIWORD(wParam) == BN_CLICKED) {
                         YouTubeDL::Update();
+                    }
+                break;
+                case IDC_VIEWLOGS:
+                    if (HIWORD(wParam) == BN_CLICKED) {
+                        // TODO: Open the logs file
                     }
                 break;
             }

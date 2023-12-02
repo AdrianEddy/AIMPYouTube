@@ -81,6 +81,9 @@
     <ClInclude Include="YouTubeDL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AimpTask.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AIMPYouTube.cpp">

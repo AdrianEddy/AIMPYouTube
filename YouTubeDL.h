@@ -11,4 +11,5 @@ public:
     static std::wstring Params;
     static int Timeout;
     static bool Force;
+    static bool HideErrors;
 };
