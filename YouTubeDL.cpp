@@ -10,7 +10,6 @@
 std::wstring YouTubeDL::Params = L"-f best[ext=mp4]/best";
 int YouTubeDL::Timeout = 30;
 bool YouTubeDL::Force = false;
-bool YouTubeDL::HideErrors = false;
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 std::wstring YouTubeDL::GetPath() {

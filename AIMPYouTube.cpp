@@ -153,10 +153,11 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
     StartMonitorTimer();
     UpdatePlaylistMenu();
 
-    YouTubeDL::Params     = Config::GetString(L"YouTubeDLParams", YouTubeDL::Params);
-    YouTubeDL::Timeout    = Config::GetInt32(L"YouTubeDLTimeout", YouTubeDL::Timeout);
-    YouTubeDL::Force      = Config::GetInt32(L"YouTubeDLAlways", 0);
-    YouTubeDL::HideErrors = Config::GetInt32(L"DontShowErrors", YouTubeDL::HideErrors);
+    YouTubeDL::Params  = Config::GetString(L"YouTubeDLParams", YouTubeDL::Params);
+    YouTubeDL::Timeout = Config::GetInt32(L"YouTubeDLTimeout", YouTubeDL::Timeout);
+    YouTubeDL::Force   = Config::GetInt32(L"YouTubeDLAlways", 0);
+
+    Tools::HideErrors = Config::GetInt32(L"DontShowErrors", Tools::HideErrors);
 
     return S_OK;
 }

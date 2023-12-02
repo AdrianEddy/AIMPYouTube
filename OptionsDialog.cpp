@@ -141,7 +141,7 @@ void WINAPI OptionsDialog::Notification(int ID) {
             SendDlgItemMessage(m_handle, IDC_YTDLTIMEOUTSPIN, UDM_SETPOS32, 0, Config::GetInt32(L"YouTubeDLTimeout", YouTubeDL::Timeout));
             SendDlgItemMessage(m_handle, IDC_YTDLFORCE, BM_SETCHECK, Config::GetInt32(L"YouTubeDLAlways", YouTubeDL::Force), 0);
 
-            SendDlgItemMessage(m_handle, IDC_DONTSHOWERRORS, BM_SETCHECK, Config::GetInt32(L"DontShowErrors", YouTubeDL::HideErrors), 0);
+            SendDlgItemMessage(m_handle, IDC_DONTSHOWERRORS, BM_SETCHECK, Config::GetInt32(L"DontShowErrors", Tools::HideErrors), 0);
 
             BOOL enable = SendDlgItemMessage(m_handle, IDC_CHECKEVERY, BM_GETCHECK, 0, 0) == BST_CHECKED;
             EnableWindow(GetDlgItem(m_handle, IDC_CHECKEVERYVALUE), enable);
@@ -171,7 +171,7 @@ void WINAPI OptionsDialog::Notification(int ID) {
                 Config::SetInt32(L"YouTubeDLAlways", YouTubeDL::Force = (SendDlgItemMessage(m_handle, IDC_YTDLFORCE, BM_GETCHECK, 0, 0) == BST_CHECKED));
                 Config::SetInt32(L"YouTubeDLTimeout", YouTubeDL::Timeout = SendDlgItemMessage(m_handle, IDC_YTDLTIMEOUTSPIN, UDM_GETPOS32, 0, 0));
 
-                Config::SetInt32(L"DontShowErrors", YouTubeDL::HideErrors = (SendDlgItemMessage(m_handle, IDC_DONTSHOWERRORS, BM_GETCHECK, 0, 0) == BST_CHECKED));
+                Config::SetInt32(L"DontShowErrors", Tools::HideErrors = (SendDlgItemMessage(m_handle, IDC_DONTSHOWERRORS, BM_GETCHECK, 0, 0) == BST_CHECKED));
 
                 WCHAR buffer[4096];
                 SendDlgItemMessage(m_handle, IDC_YTDLPARAMS, WM_GETTEXT, 4096, (LPARAM)buffer);

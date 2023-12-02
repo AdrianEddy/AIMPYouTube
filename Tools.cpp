@@ -17,6 +17,8 @@
 
 static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> wStrConverter;
 
+bool Tools::HideErrors = false;
+
 std::wstring Tools::ToWString(const std::string &string) {
     return wStrConverter.from_bytes(string);
 }
@@ -59,7 +61,7 @@ void Tools::ShowLastError(std::wstring message) {
     if (!error.empty())
         message += L" - " + error;
 
-    if (!YouTubeDL::HideErrors) {
+    if (!HideErrors) {
         Plugin::instance()->ExecuteInMainThread([message] {
             IAIMPUIMessageDialog* dialog = nullptr;
             IAIMPString* caption = nullptr;

@@ -31,5 +31,7 @@ struct Tools {
     static void ShowLastError(std::wstring message);
 
     static void ExecuteInNewThread(std::function<void()> &&cb);
+
+    static bool HideErrors;
 };
 
