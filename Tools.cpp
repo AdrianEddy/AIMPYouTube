@@ -1,5 +1,6 @@
 #include "Tools.h"
 #include "AIMPYouTube.h"
+#include "YouTubeDL.h"
 
 #include <windows.h>
 #include <locale>
@@ -58,15 +59,17 @@ void Tools::ShowLastError(std::wstring message) {
     if (!error.empty())
         message += L" - " + error;
 
-    Plugin::instance()->ExecuteInMainThread([message] {
-        IAIMPUIMessageDialog* dialog = nullptr;
-        IAIMPString* caption = nullptr;
-        if (SUCCEEDED(Plugin::instance()->core()->QueryInterface(IID_IAIMPUIMessageDialog, reinterpret_cast<void**>(&dialog))) &&
-            SUCCEEDED(Plugin::instance()->LangAIMP(&caption, L"YouTube.Messages\\Error"))) {
-            HRESULT r = dialog->Execute(Plugin::instance()->GetMainWindowHandle(), caption, AIMPString(message), MB_OK | MB_ICONERROR);
-            caption->Release();
-        }
-    });
+    if (!YouTubeDL::HideErrors) {
+        Plugin::instance()->ExecuteInMainThread([message] {
+            IAIMPUIMessageDialog* dialog = nullptr;
+            IAIMPString* caption = nullptr;
+            if (SUCCEEDED(Plugin::instance()->core()->QueryInterface(IID_IAIMPUIMessageDialog, reinterpret_cast<void**>(&dialog))) &&
+                SUCCEEDED(Plugin::instance()->LangAIMP(&caption, L"YouTube.Messages\\Error"))) {
+                HRESULT r = dialog->Execute(Plugin::instance()->GetMainWindowHandle(), caption, AIMPString(message), MB_OK | MB_ICONERROR);
+                caption->Release();
+            }
+        });
+    }
 }
 
 std::wstring Tools::UrlEncode(const std::wstring &url) {
