@@ -89,6 +89,7 @@
     <ClInclude Include="AddURLDialog.h" />
     <ClInclude Include="AimpHTTP.h" />
     <ClInclude Include="AimpMenu.h" />
+    <ClInclude Include="AimpTask.h" />
     <ClInclude Include="AIMPYouTube.h" />
     <ClInclude Include="AIMPString.h" />
     <ClInclude Include="ArtworkProvider.h" />

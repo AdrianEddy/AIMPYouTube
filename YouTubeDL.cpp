@@ -97,7 +97,7 @@ std::wstring YouTubeDL::GetStreamUrl(const std::wstring &id) {
         static bool updated = false;
         if (!updated) {
             updated = true;
-            YouTubeDL::Update();
+            YouTubeDL::Update(false);
         }
         return {};
     }
@@ -105,9 +105,13 @@ std::wstring YouTubeDL::GetStreamUrl(const std::wstring &id) {
     return result;
 }
 
-bool YouTubeDL::Update() {
-    auto cmd = L"/c \"" + GetPath() + L"\" -U & pause";
-    auto result = (int)ShellExecuteW(nullptr, L"runas", L"cmd", cmd.c_str(), nullptr, SW_SHOWNORMAL);
+bool YouTubeDL::Update(bool foreground) {
+    int result;
+    if (foreground) {
+        auto cmd = L"/c \"" + GetPath() + L"\" -U & pause";
+        result = (int)ShellExecuteW(nullptr, L"runas", L"cmd", cmd.c_str(), nullptr, SW_SHOWNORMAL);
+    } else
+        result = (int)ShellExecuteW(nullptr, L"runas", GetPath().c_str(), L"-U", nullptr, SW_HIDE);
     if (result <= 32) {
         Tools::ShowLastError(L"YouTubeDL::Update(): ShellExecuteW - " + std::to_wstring(result));
         return false;
