@@ -47,3 +47,7 @@
 #define IDC_LOGGROUPBOX                         40024
 #define IDC_DONTSHOWERRORS                      40025
 #define IDC_VIEWLOGS                            40026
+#define IDC_YTAPICLIENTIDTEXT                   40027
+#define IDC_YTAPICLIENTSECRETTEXT               40028
+#define IDC_YTAPICLIENTID                       40029
+#define IDC_YTAPICLIENTSECRET                   40030
