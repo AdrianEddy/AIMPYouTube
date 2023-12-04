@@ -1,13 +1,12 @@
 /************************************************/
 /*                                              */
 /*          AIMP Programming Interface          */
-/*               v4.00 build 1660               */
+/*               v5.30 build 2500               */
 /*                                              */
 /*                Artem Izmaylov                */
-/*                (C) 2006-2015                 */
+/*                (C) 2006-2023                 */
 /*                 www.aimp.ru                  */
-/*                                              */
-/*            Mail: support@aimp.ru             */
+/*               support@aimp.ru                */
 /*                                              */
 /************************************************/
 
@@ -18,6 +17,7 @@
 #include <unknwn.h>
 
 static const GUID IID_IAIMPConfig = {0x41494D50, 0x436F, 0x6E66, 0x69, 0x67, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+static const GUID IID_IAIMPDPIAware = {0x41494D50, 0x4450, 0x4941, 0x77, 0x61, 0x72, 0x65, 0x00, 0x00, 0x00, 0x00};
 static const GUID IID_IAIMPErrorInfo = {0x41494D50, 0x4572, 0x7249, 0x6E, 0x66, 0x6F, 0x00, 0x00, 0x00, 0x00, 0x00};
 static const GUID IID_IAIMPHashCode = {0x41494D50, 0x4861, 0x7368, 0x43, 0x6F, 0x64, 0x65, 0x00, 0x00, 0x00, 0x00};
 static const GUID IID_IAIMPFileStream = {0x41494D50, 0x4669, 0x6C65, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6D, 0x00, 0x00};
@@ -75,6 +75,15 @@ class IAIMPHashCode: public IUnknown
 		virtual void WINAPI Recalculate() = 0;
 };
 
+/* IAIMPDPIAware */
+
+class IAIMPDPIAware: public IUnknown
+{
+	public:
+		virtual int  	WINAPI GetDPI() = 0;
+		virtual HRESULT WINAPI SetDPI(int Value) = 0;
+};
+
 /* IAIMPObjectList */
 
 class IAIMPObjectList: public IUnknown
@@ -108,8 +117,8 @@ class IAIMPString: public IUnknown
 		virtual HRESULT WINAPI ChangeCase(int Mode) = 0;
 		virtual HRESULT WINAPI Clone(IAIMPString **S) = 0;
 
-		virtual HRESULT WINAPI Compare(IAIMPString* S, int* CompareResult, bool IgnoreCase) = 0;
-		virtual HRESULT WINAPI Compare2(WCHAR* Chars, int CharsCount, int* CompareResult, bool IgnoreCase) = 0;
+		virtual HRESULT WINAPI Compare(IAIMPString* S, int* CompareResult, BOOL IgnoreCase) = 0;
+		virtual HRESULT WINAPI Compare2(WCHAR* Chars, int CharsCount, int* CompareResult, BOOL IgnoreCase) = 0;
 
 		virtual HRESULT WINAPI Delete(int Index, int Count) = 0;
 
@@ -213,7 +222,7 @@ class IAIMPImageContainer: public IUnknown
 class IAIMPProgressCallback: public IUnknown
 {
 	public:
-		virtual HRESULT WINAPI Process(float Progress, bool *Canceled) = 0;
+		virtual HRESULT WINAPI Process(float Progress, BOOL *Canceled) = 0;
 };
 
 /* IAIMPPropertyList */
@@ -241,8 +250,8 @@ class IAIMPPropertyList: public IUnknown
 class IAIMPPropertyList2: public IAIMPPropertyList
 {
 	public:
-		virtual HRESULT WINAPI GetValueAsVariant(int PropertyID, VARIANT* Value) = 0;
-		virtual HRESULT WINAPI SetValueAsVariant(int PropertyID, const VARIANT Value) = 0;
+		virtual HRESULT WINAPI GetValueAsVariant(int PropertyID, VARIANT** Value) = 0;
+		virtual HRESULT WINAPI SetValueAsVariant(int PropertyID, VARIANT* Value) = 0;
 };
 
 /* IAIMPConfig */

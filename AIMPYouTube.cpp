@@ -2,6 +2,7 @@
 
 #include "AIMPString.h"
 #include "SDK/apiPlayer.h"
+#include "AimpTask.h"
 #include "Timer.h"
 #include "PlaylistListener.h"
 #include "AddURLDialog.h"
@@ -31,6 +32,11 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
 
     m_core = Core;
     AIMPString::Init(Core);
+
+    if (FAILED(m_core->QueryInterface(IID_IAIMPServiceThreads, reinterpret_cast<void**>(&m_threads)))) {
+        Finalize();
+        return E_FAIL;
+    }
 
     if (FAILED(m_core->QueryInterface(IID_IAIMPServiceMUI, reinterpret_cast<void **>(&m_muiService)))) {
         Finalize();
@@ -151,6 +157,8 @@ HRESULT WINAPI Plugin::Initialize(IAIMPCore *Core) {
     YouTubeDL::Timeout = Config::GetInt32(L"YouTubeDLTimeout", YouTubeDL::Timeout);
     YouTubeDL::Force   = Config::GetInt32(L"YouTubeDLAlways", 0);
 
+    Tools::HideErrors = Config::GetInt32(L"DontShowErrors", Tools::HideErrors);
+
     return S_OK;
 }
 
@@ -229,6 +237,11 @@ HRESULT WINAPI Plugin::Finalize() {
     AimpMenu::Deinit();
     AimpHTTP::Deinit();
     Config::Deinit();
+
+    if (m_threads) {
+        m_threads->Release();
+        m_threads = nullptr;
+    }
 
     if (m_messageDispatcher) {
         m_messageDispatcher->Unhook(m_messageHook);
@@ -459,22 +472,30 @@ HWND Plugin::GetMainWindowHandle() {
     return NULL;
 }
 
+HRESULT Plugin::ExecuteInMainThread(std::function<void()> task, DWORD flags) {
+    if (!m_threads)
+        return E_FAIL;
+    else {
+        IAIMPTask* aimpTask = new AimpTask(task);
+        return m_threads->ExecuteInMainThread(aimpTask, flags);
+    }
+}
+
+HRESULT Plugin::LangAIMP(IAIMPString** value, const std::wstring& key, int part) {
+    if (!m_muiService)
+        return E_FAIL;
+    else if (part > -1)
+        return SUCCEEDED(m_muiService->GetValuePart(AIMPString(key), part, value));
+    else
+        return SUCCEEDED(m_muiService->GetValue(AIMPString(key), value));
+}
+
 std::wstring Plugin::Lang(const std::wstring &key, int part) {
     std::wstring ret;
-    if (!m_muiService)
-        return ret;
-
-    IAIMPString *value = nullptr;
-    if (part > -1) {
-        if (SUCCEEDED(m_muiService->GetValuePart(AIMPString(key), part, &value))) {
-            ret = value->GetData();
-            value->Release();
-        }
-    } else {
-        if (SUCCEEDED(m_muiService->GetValue(AIMPString(key), &value))) {
-            ret = value->GetData();
-            value->Release();
-        }
+    IAIMPString* value = nullptr;
+    if (SUCCEEDED(LangAIMP(&value, key, part))) {
+        ret = value->GetData();
+        value->Release();
     }
     return ret;
 }

@@ -65,6 +65,7 @@ public:
     IAIMPPlaylistItem *GetCurrentTrack();
     void ForAllPlaylists(std::function<void(IAIMPPlaylist *, const std::wstring &)> cb);
 
+    HRESULT LangAIMP(IAIMPString** value, const std::wstring& key, int part = -1);
     std::wstring Lang(const std::wstring &key, int part = -1);
 
     enum CallbackFlags {
@@ -76,6 +77,7 @@ public:
     void ForEveryItem(IAIMPPlaylist *pl, std::function<int(IAIMPPlaylistItem *, IAIMPFileInfo *, const std::wstring &)> callback);
 
     HWND GetMainWindowHandle();
+    HRESULT ExecuteInMainThread(std::function<void()> task, DWORD flags = 0);
 
     std::wstring getAccessToken();
     void setAccessToken(const std::wstring &accessToken, const std::wstring &refreshToken, int expires_in);
@@ -92,7 +94,7 @@ public:
     void UpdatePlaylistMenu();
 
 private:
-    Plugin() : m_messageHook(nullptr), m_playlistManager(nullptr), m_messageDispatcher(nullptr), m_muiService(nullptr), m_monitorTimer(0), m_gdiplusToken(0), m_core(nullptr) {
+    Plugin() : m_threads(nullptr), m_messageHook(nullptr), m_playlistManager(nullptr), m_messageDispatcher(nullptr), m_muiService(nullptr), m_monitorTimer(0), m_gdiplusToken(0), m_core(nullptr) {
         AddRef();
     }
     Plugin(const Plugin &);
@@ -102,6 +104,7 @@ private:
 
     bool m_finalized{false};
 
+    IAIMPServiceThreads* m_threads;
     MessageHook *m_messageHook;
     IAIMPServicePlaylistManager *m_playlistManager;
     IAIMPServiceMessageDispatcher *m_messageDispatcher;

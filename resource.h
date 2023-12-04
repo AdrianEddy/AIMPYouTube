@@ -38,5 +38,8 @@
 #define IDC_MONITORPLAYLISTS                    40016
 #define IDC_YTDLUPDATE                          40017
 #define IDC_EXCLUSIONSGROUPBOX                  40018
+#define IDC_VIEWLOGS                            40018
 #define IDC_MANAGEEXCLUSIONS                    40019
 #define IDC_YTDLGROUPBOX                        40020
+#define IDC_DONTSHOWERRORS                      40021
+#define IDC_LOGGROUPBOX                         40022

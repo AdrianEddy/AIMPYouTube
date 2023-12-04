@@ -13,7 +13,7 @@ HRESULT WINAPI ArtworkProvider::Get2(IAIMPFileInfo *FileInfo, IAIMPPropertyList 
         if (ti) {
             if (!ti->Artwork.empty()) {
                 int maxFileSize = 0;
-                if (SUCCEEDED(Options->GetValueAsInt32(AIMP_SERVICE_ALBUMART_PROPID_FIND_IN_INTERNET_MAX_FILE_SIZE, &maxFileSize))) {
+                if (SUCCEEDED(Options->GetValueAsInt32(AIMP_ALBUMART_REQUEST_PROPID_FIND_IN_INTERNET_MAX_FILE_SIZE, &maxFileSize))) {
                     AimpHTTP::DownloadImage(ti->Artwork, Image, maxFileSize);
                     return *Image ? S_OK : E_FAIL;
                 }

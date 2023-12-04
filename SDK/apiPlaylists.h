@@ -1,13 +1,12 @@
 /************************************************/
 /*                                              */
 /*          AIMP Programming Interface          */
-/*               v4.00 build 1660               */
+/*               v5.30 build 2500               */
 /*                                              */
 /*                Artem Izmaylov                */
-/*                (C) 2006-2015                 */
+/*                (C) 2006-2023                 */
 /*                 www.aimp.ru                  */
-/*                                              */
-/*            Mail: support@aimp.ru             */
+/*               support@aimp.ru                */
 /*                                              */
 /************************************************/
 
@@ -31,7 +30,7 @@ static const GUID IID_IAIMPExtensionPlaylistManagerListener = {0x41494D50, 0x457
 static const GUID IID_IAIMPServicePlaylistManager = {0x41494D50, 0x5372, 0x7650, 0x6C, 0x73, 0x4D, 0x61, 0x6E, 0x00, 0x00, 0x00};
 static const GUID IID_IAIMPServicePlaylistManager2 = {0x41494D50, 0x536D, 0x504C, 0x4D, 0x6E, 0x67, 0x72, 0x32, 0x00, 0x00, 0x00};
 static const GUID IID_IAIMPPlaylistPreimageFolders = {0x41494D50, 0x536D, 0x504C, 0x53, 0x72, 0x63, 0x46, 0x6C, 0x64, 0x72, 0x73};
-static const GUID IID_IAIMPPlaylistPreimageDataProvider = {0x41494D50, 0x536D, 0x506C, 0x73, 0x44, 0x61, 0x74, 0x61, 0x00, 0x00, 0x00};
+static const GUID IID_IAIMPPlaylistPreimageDataProvider = {0x41494D50, 0x536D, 0x506C, 0x73, 0x44, 0x61, 0x74, 0x61, 0x50, 0x72, 0x76};
 static const GUID IID_IAIMPPlaylistPreimageListener = {0x41494D50, 0x536D, 0x504C, 0x4D, 0x6E, 0x67, 0x72, 0x00, 0x00, 0x00, 0x00};
 static const GUID IID_IAIMPPlaylistPreimage = {0x41494D50, 0x536D, 0x504C, 0x53, 0x72, 0x63, 0x00, 0x00, 0x00, 0x00, 0x00};
 static const GUID IID_IAIMPExtensionPlaylistPreimageFactory = {0x41494D50, 0x4578, 0x7453, 0x6D, 0x50, 0x6C, 0x73, 0x46, 0x63, 0x74, 0x00};
@@ -97,12 +96,15 @@ const int AIMP_PLAYLIST_DELETE_FLAGS_PHYSICALLY     = 1;
 const int AIMP_PLAYLIST_DELETE_FLAGS_NOCONFIRMATION = 2;
 
 // Flags for IAIMPPlaylist.Sort
-const int AIMP_PLAYLIST_SORTMODE_TITLE      = 1;
-const int AIMP_PLAYLIST_SORTMODE_FILENAME   = 2;
-const int AIMP_PLAYLIST_SORTMODE_DURATION   = 3;
-const int AIMP_PLAYLIST_SORTMODE_ARTIST     = 4;
-const int AIMP_PLAYLIST_SORTMODE_INVERSE    = 5;
-const int AIMP_PLAYLIST_SORTMODE_RANDOMIZE  = 6;
+const int AIMP_PLAYLIST_SORTMODE_TITLE                         = 1;
+const int AIMP_PLAYLIST_SORTMODE_FILENAME                      = 2;
+const int AIMP_PLAYLIST_SORTMODE_DURATION                      = 3;
+const int AIMP_PLAYLIST_SORTMODE_ARTIST                        = 4;
+const int AIMP_PLAYLIST_SORTMODE_INVERSE                       = 5;
+const int AIMP_PLAYLIST_SORTMODE_RANDOMIZE                     = 6;
+const int AIMP_PLAYLIST_SORTMODE_RANDOMIZE_GROUPS              = 7; // v5.10
+const int AIMP_PLAYLIST_SORTMODE_RANDOMIZE_GROUPITEMS          = 8; // v5.10
+const int AIMP_PLAYLIST_SORTMODE_RANDOMIZE_GROUPS_AND_IT_ITEMS = 9; // v5.10
 
 // Flags for IAIMPPlaylist.Close
 const int AIMP_PLAYLIST_CLOSE_FLAGS_FORCE_REMOVE = 1;
@@ -129,19 +131,28 @@ const int AIMP_PLAYLIST_NOTIFY_FILEINFO       = 64;
 const int AIMP_PLAYLIST_NOTIFY_STATISTICS     = 128;
 const int AIMP_PLAYLIST_NOTIFY_PLAYINGSWITCHS = 256;
 const int AIMP_PLAYLIST_NOTIFY_PREIMAGE       = 512;
+const int AIMP_PLAYLIST_NOTIFY_MODIFIED       = 1024;
+const int AIMP_PLAYLIST_NOTIFY_DEADSTATE      = 2048;
+const int AIMP_PLAYLIST_NOTIFY_MAKEVISIBLE    = 4096;
+const int AIMP_PLAYLIST_NOTIFY_PLAYBACKQUEUE  = 8192;
 
 // Properties IDS for IAIMPPlaylistPreimage
 const int AIMP_PLAYLISTPREIMAGE_PROPID_FACTORYID = 1;
 const int AIMP_PLAYLISTPREIMAGE_PROPID_AUTOSYNC = 2;
 const int AIMP_PLAYLISTPREIMAGE_PROPID_HASDIALOG = 3;
 const int AIMP_PLAYLISTPREIMAGE_PROPID_SORTTEMPLATE = 4;
+const int AIMP_PLAYLISTPREIMAGE_PROPID_AUTOSYNC_ON_STARTUP = 5;
 
-// Properties IDs for IAIMPPlaylistPreimageFolders
-const int AIMP_PLAYLISTPREIMAGEFOLDERS_PROPID_AUTOSYNC_ON_STARTUP = 100;
+// Properties Ids for AIMP_PREIMAGEFACTORY_PLAYLIST_ID
+const int AIMP_PLAYLISTPREIMAGE_PLAYLISTBASED_PROPID_URI = 100;
+
+// Flags for IAIMPExtensionPlaylistPreimageFactory.GetFlags
+const int AIMP_PREIMAGEFACTORY_FLAG_CONTEXTDEPENDENT = 1;
 
 // Built-in Preimage Factories
-//const WCHAR* AIMP_PREIMAGEFACTORY_FOLDERS_ID = TEXT("TAIMPPlaylistFoldersPreimage");
-//const WCHAR* AIMP_PREIMAGEFACTORY_MUSICLIBRARY_ID = TEXT("TAIMPMLPlaylistPreimage");
+static const WCHAR* AIMP_PREIMAGEFACTORY_FOLDERS_ID = L"TAIMPPlaylistFoldersPreimage";
+static const WCHAR* AIMP_PREIMAGEFACTORY_MUSICLIBRARY_ID = L"TAIMPMLPlaylistPreimage";
+static const WCHAR* AIMP_PREIMAGEFACTORY_PLAYLIST_ID = L"TAIMPPlaylistBasedPreimage";
 
 /* IAIMPPlaylistItem */
 
@@ -327,6 +338,7 @@ class IAIMPExtensionPlaylistPreimageFactory : public IUnknown
 		virtual HRESULT WINAPI CreatePreimage(IAIMPPlaylistPreimage** preimage) = 0;
 		virtual HRESULT WINAPI GetID(IAIMPString** ID) = 0;
 		virtual HRESULT WINAPI GetName(IAIMPString** Name) = 0;
+		virtual DWORD WINAPI GetFlags() = 0;
 };
 
 
@@ -344,7 +356,7 @@ class IAIMPServicePlaylistManager: public IUnknown
     	virtual HRESULT WINAPI SetActivePlaylist(IAIMPPlaylist* Playlist) = 0;
 
 		// Playable Playlist
-    	virtual HRESULT WINAPI GetPlayablePlaylist(IAIMPPlaylist **Playlist) = 0;
+    	virtual HRESULT WINAPI GetPlayingPlaylist(IAIMPPlaylist **Playlist) = 0;
 
 		// Loaded Playlists
 		virtual HRESULT WINAPI GetLoadedPlaylist(int Index, IAIMPPlaylist** Playlist) = 0;
