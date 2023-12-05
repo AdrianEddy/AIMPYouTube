@@ -10,6 +10,7 @@
 #define IDD_ADDURL                              112
 #define IDR_CONNECTRES1                         113
 #define IDD_EXCLUSIONS                          116
+#define IDD_YTAPISETTINGS                       119
 #define IDC_CONNECTBTN                          1001
 #define IDC_AVATAR                              1005
 #define IDC_USERNAME                            1006
@@ -20,6 +21,7 @@
 #define IDC_CREATENEW                           1011
 #define IDC_LISTVIEW                            1012
 #define IDC_MAINFRAME                           40000
+#define IDC_YTAPIUSAGE                          40000
 #define IDC_AUTHGROUPBOX                        40001
 #define IDC_USERINFO                            40002
 #define IDC_YTDLPARAMSTEXT                      40003
@@ -38,12 +40,11 @@
 #define IDC_MONITORPLAYLISTS                    40016
 #define IDC_YTDLUPDATE                          40017
 #define IDC_EXCLUSIONSGROUPBOX                  40018
-#define IDC_YTAPIGROUPBOX                       40018
 #define IDC_MANAGEEXCLUSIONS                    40019
 #define IDC_YTDLGROUPBOX                        40020
+#define IDC_OPENYTAPI                           40021
 #define IDC_YTAPIKEYTEXT                        40021
 #define IDC_YTAPIKEY                            40022
-#define IDC_YTAPIKEYUSAGE                       40023
 #define IDC_LOGGROUPBOX                         40024
 #define IDC_DONTSHOWERRORS                      40025
 #define IDC_VIEWLOGS                            40026

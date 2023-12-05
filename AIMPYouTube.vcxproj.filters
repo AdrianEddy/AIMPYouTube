@@ -84,6 +84,9 @@
     <ClInclude Include="AimpTask.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="YTAPIDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AIMPYouTube.cpp">
@@ -144,6 +147,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="YouTubeDL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="YTAPIDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

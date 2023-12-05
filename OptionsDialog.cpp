@@ -10,6 +10,7 @@
 #include <Shellapi.h>
 #include <ctime>
 #include "YouTubeDL.h"
+#include "YTAPIDialog.h"
 
 #include <Commctrl.h>
 #pragma comment(lib, "Comctl32.lib")
@@ -73,6 +74,7 @@ void WINAPI OptionsDialog::Notification(int ID) {
             std::wstring checkEveryText1 = m_plugin->Lang(L"YouTube.Options\\CheckEvery", 1);
             SetDlgItemText(m_handle, IDC_MAINFRAME,       m_plugin->Lang(L"YouTube.Options\\Title").c_str());
             SetDlgItemText(m_handle, IDC_AUTHGROUPBOX,    m_plugin->Lang(L"YouTube.Options\\Account").c_str());
+            SetDlgItemText(m_handle, IDC_OPENYTAPI, m_plugin->Lang(L"YouTube.Options\\DeveloperAccountButton").c_str());
             SetDlgItemText(m_handle, IDC_MONITORGROUPBOX, m_plugin->Lang(L"YouTube.Options\\MonitorURLs").c_str());
             SetDlgItemText(m_handle, IDC_LOGGROUPBOX,     m_plugin->Lang(L"YouTube.Options\\Log").c_str());
             SetDlgItemText(m_handle, IDC_MONITORPLAYLISTS,m_plugin->Lang(L"YouTube.Options\\MonitorUserPlaylists").c_str());
@@ -82,7 +84,8 @@ void WINAPI OptionsDialog::Notification(int ID) {
             SetDlgItemText(m_handle, IDC_CHECKEVERY,      checkEveryText0.c_str());
             SetDlgItemText(m_handle, IDC_HOURS,           checkEveryText1.c_str());
             SetDlgItemText(m_handle, IDC_MANAGEEXCLUSIONS,m_plugin->Lang(L"YouTube.Exclusions\\Header").c_str());
-            SendDlgItemMessage(m_handle, IDC_VIEWLOGS, WM_UPDATELOCALE, 0, 0);
+            SendDlgItemMessage(m_handle, IDC_OPENYTAPI, WM_UPDATELOCALE, 0, 0);
+            SendDlgItemMessage(m_handle, IDC_VIEWLOGS,  WM_UPDATELOCALE, 0, 0);
 
             std::wstring ytdlTimeoutText0 = m_plugin->Lang(L"YouTube.Options\\YoutubeDLTimeout", 0);
             std::wstring ytdlTimeoutText1 = m_plugin->Lang(L"YouTube.Options\\YoutubeDLTimeout", 1);
@@ -724,6 +727,12 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
             GetClientRect(viewLogs, &rc2);
             SetWindowPos(viewLogs, NULL, rc.right - rc2.right - 7, rc.bottom - rc2.bottom - 7, rc2.right, rc2.bottom, SWP_NOZORDER);
 
+            GetWindowRect(GetDlgItem(hwnd, IDC_AUTHGROUPBOX), &rc);
+            MapWindowPoints(HWND_DESKTOP, hwnd, (LPPOINT)&rc, 2);
+            HWND openYTAPI = GetDlgItem(hwnd, IDC_OPENYTAPI);
+            GetClientRect(openYTAPI, &rc2);
+            SetWindowPos(openYTAPI, NULL, rc.right - rc2.right - 7, rc.top + rc2.top + 14, rc2.right, rc2.bottom, SWP_NOZORDER);
+
             return TRUE;
         } break;
         case WM_CTLCOLORSTATIC: {
@@ -795,6 +804,11 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
                             EnableWindow(GetDlgItem(hwnd, IDC_CHECKEVERYVALUESPIN), enable);
                             EnableWindow(GetDlgItem(hwnd, IDC_HOURS), enable);
                         }
+                    }
+                break;
+                case IDC_OPENYTAPI:
+                    if (HIWORD(wParam) == BN_CLICKED) {
+                        YTAPIDialog::Show();
                     }
                 break;
                 case IDC_YTDLUPDATE:
