@@ -10,6 +10,7 @@
 #include <Shellapi.h>
 #include <ctime>
 #include "YouTubeDL.h"
+#include "YTAPIDialog.h"
 
 #include <Commctrl.h>
 #pragma comment(lib, "Comctl32.lib")
@@ -73,6 +74,7 @@ void WINAPI OptionsDialog::Notification(int ID) {
             std::wstring checkEveryText1 = m_plugin->Lang(L"YouTube.Options\\CheckEvery", 1);
             SetDlgItemText(m_handle, IDC_MAINFRAME,       m_plugin->Lang(L"YouTube.Options\\Title").c_str());
             SetDlgItemText(m_handle, IDC_AUTHGROUPBOX,    m_plugin->Lang(L"YouTube.Options\\Account").c_str());
+            SetDlgItemText(m_handle, IDC_OPENYTAPI, m_plugin->Lang(L"YouTube.Options\\DeveloperAccountButton").c_str());
             SetDlgItemText(m_handle, IDC_MONITORGROUPBOX, m_plugin->Lang(L"YouTube.Options\\MonitorURLs").c_str());
             SetDlgItemText(m_handle, IDC_LOGGROUPBOX,     m_plugin->Lang(L"YouTube.Options\\Log").c_str());
             SetDlgItemText(m_handle, IDC_MONITORPLAYLISTS,m_plugin->Lang(L"YouTube.Options\\MonitorUserPlaylists").c_str());
@@ -82,7 +84,8 @@ void WINAPI OptionsDialog::Notification(int ID) {
             SetDlgItemText(m_handle, IDC_CHECKEVERY,      checkEveryText0.c_str());
             SetDlgItemText(m_handle, IDC_HOURS,           checkEveryText1.c_str());
             SetDlgItemText(m_handle, IDC_MANAGEEXCLUSIONS,m_plugin->Lang(L"YouTube.Exclusions\\Header").c_str());
-            SendDlgItemMessage(m_handle, IDC_VIEWLOGS, WM_UPDATELOCALE, 0, 0);
+            SendDlgItemMessage(m_handle, IDC_OPENYTAPI, WM_UPDATELOCALE, 0, 0);
+            SendDlgItemMessage(m_handle, IDC_VIEWLOGS,  WM_UPDATELOCALE, 0, 0);
 
             std::wstring ytdlTimeoutText0 = m_plugin->Lang(L"YouTube.Options\\YoutubeDLTimeout", 0);
             std::wstring ytdlTimeoutText1 = m_plugin->Lang(L"YouTube.Options\\YoutubeDLTimeout", 1);
@@ -232,10 +235,11 @@ void OptionsDialog::LoadProfileInfo(std::function<void()> onFinished) {
         if (d.IsObject() && d.HasMember("items") && d["items"].IsArray() && d["items"].Size() > 0 && d["items"][0].HasMember("contentDetails")) {
             const rapidjson::Value &i = d["items"][0]["contentDetails"]["relatedPlaylists"];
 
-            m_userPlaylists.push_back({ Tools::ToWString(i["favorites"]), Plugin::instance()->Lang(L"YouTube.Playlists\\Favorites"), true, L"Favorites" });
-            m_userPlaylists.push_back({ Tools::ToWString(i["uploads"]), Plugin::instance()->Lang(L"YouTube.Playlists\\Uploads"), false, L"Uploads" });
-            m_userPlaylists.push_back({ Tools::ToWString(i["likes"]), Plugin::instance()->Lang(L"YouTube.Playlists\\Likes"), true, L"Likes" });
-            m_userPlaylists.push_back({ Tools::ToWString(i["watchLater"]), Plugin::instance()->Lang(L"YouTube.Playlists\\WatchLater"), true, L"WatchLater" });
+            // YouTube seems to no longer provide favorites or watchLater
+            if (i.HasMember("favorites")) m_userPlaylists.push_back({ Tools::ToWString(i["favorites"]), Plugin::instance()->Lang(L"YouTube.Playlists\\Favorites"), true, L"Favorites" });
+            if (i.HasMember("uploads")) m_userPlaylists.push_back({ Tools::ToWString(i["uploads"]), Plugin::instance()->Lang(L"YouTube.Playlists\\Uploads"), false, L"Uploads" });
+            m_userPlaylists.push_back({ i.HasMember("likes") ? Tools::ToWString(i["likes"]) : L"LL", Plugin::instance()->Lang(L"YouTube.Playlists\\Likes"), true, L"Likes"});
+            m_userPlaylists.push_back({ i.HasMember("watchLater") ? Tools::ToWString(i["watchLater"]) : L"WL", Plugin::instance()->Lang(L"YouTube.Playlists\\WatchLater"), true, L"WatchLater"});
 
             m_userYTName = Tools::ToWString(d["items"][0]["snippet"]["title"]);
         }
@@ -288,6 +292,21 @@ void OptionsDialog::UpdateProfileInfo() {
     RECT rc;
     GetClientRect(m_handle, &rc);
     RedrawWindow(m_handle, &rc, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_ALLCHILDREN);
+}
+
+void OptionsDialog::LogoutProfile() {
+    m_plugin->setAccessToken(L"", L"", 0);
+    m_userName.clear();
+    m_userInfo.clear();
+    m_userId.clear();
+    m_userYTName.clear();
+    m_userPlaylists.clear();
+    Config::UserPlaylists.clear();
+    std::wstring path = Config::PluginConfigFolder() + L"user_avatar.jpg";
+    DeleteFile(path.c_str());
+
+    OptionsModified();
+    UpdateProfileInfo();
 }
 
 void GetRoundRectPath(Gdiplus::GraphicsPath *pPath, Gdiplus::Rect r, int dia) {
@@ -724,6 +743,12 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
             GetClientRect(viewLogs, &rc2);
             SetWindowPos(viewLogs, NULL, rc.right - rc2.right - 7, rc.bottom - rc2.bottom - 7, rc2.right, rc2.bottom, SWP_NOZORDER);
 
+            GetWindowRect(GetDlgItem(hwnd, IDC_AUTHGROUPBOX), &rc);
+            MapWindowPoints(HWND_DESKTOP, hwnd, (LPPOINT)&rc, 2);
+            HWND openYTAPI = GetDlgItem(hwnd, IDC_OPENYTAPI);
+            GetClientRect(openYTAPI, &rc2);
+            SetWindowPos(openYTAPI, NULL, rc.right - rc2.right - 7, rc.top + rc2.top + 14, rc2.right, rc2.bottom, SWP_NOZORDER);
+
             return TRUE;
         } break;
         case WM_CTLCOLORSTATIC: {
@@ -759,18 +784,7 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
                             dialog->LoadProfileInfo();
                         });
                     } else {
-                        plugin->setAccessToken(L"", L"", 0);
-                        dialog->m_userName.clear();
-                        dialog->m_userInfo.clear();
-                        dialog->m_userId.clear();
-                        dialog->m_userYTName.clear();
-                        dialog->m_userPlaylists.clear();
-                        Config::UserPlaylists.clear();
-                        std::wstring path = Config::PluginConfigFolder() + L"user_avatar.jpg";
-                        DeleteFile(path.c_str());
-
-                        dialog->OptionsModified();
-                        dialog->UpdateProfileInfo();
+                        dialog->LogoutProfile();
                     }
                 break;
                 case IDC_YTDLPARAMS:
@@ -795,6 +809,11 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
                             EnableWindow(GetDlgItem(hwnd, IDC_CHECKEVERYVALUESPIN), enable);
                             EnableWindow(GetDlgItem(hwnd, IDC_HOURS), enable);
                         }
+                    }
+                break;
+                case IDC_OPENYTAPI:
+                    if (HIWORD(wParam) == BN_CLICKED) {
+                        YTAPIDialog::Show(dialog);
                     }
                 break;
                 case IDC_YTDLUPDATE:
@@ -824,8 +843,11 @@ void OptionsDialog::Connect(std::function<void()> onFinished) {
                 s2 = Tools::ToString(Plugin::instance()->Lang(L"YouTube\\ConnectStatusOK", 1)),
                 s3 = Tools::ToString(Plugin::instance()->Lang(L"YouTube\\ConnectStatusError", 0)),
                 s4 = Tools::ToString(Plugin::instance()->Lang(L"YouTube\\ConnectStatusError", 1));
+    // The different thread also lacks config values
+    std::wstring clientID =     Config::GetString(L"YouTubeClientID", TEXT(CLIENT_ID));
+    std::wstring clientSecret = Config::GetString(L"YouTubeClientSecret", TEXT(CLIENT_SECRET));
 
-    (new TcpServer(35910, [onFinished, s1, s2, s3, s4](TcpServer *s, char *request, std::string &response) -> bool {
+    (new TcpServer(35910, [onFinished, s1, s2, s3, s4, clientID, clientSecret](TcpServer *s, char *request, std::string &response) -> bool {
         response = "HTTP/1.1 200 OK\r\n"
                    "Content-Type: text/html\r\n"
                    "Connection: close\r\n"
@@ -850,7 +872,7 @@ void OptionsDialog::Connect(std::function<void()> onFinished) {
 
             DebugA("Access code: %s\n", token);
 
-            std::string postData = "client_id=" CLIENT_ID "&client_secret=" CLIENT_SECRET "&grant_type=authorization_code&redirect_uri=http%3A%2F%2Flocalhost%3A35910%2F&code=";
+            std::string postData = "client_id=" + std::string(clientID.begin(), clientID.end()) + "&client_secret=" + std::string(clientSecret.begin(), clientSecret.end()) + "&grant_type=authorization_code&redirect_uri=http%3A%2F%2Flocalhost%3A35910%2F&code=";
             postData += token;
 
             AimpHTTP::Post(L"https://accounts.google.com/o/oauth2/token", postData, [onFinished](unsigned char *data, int size) {
@@ -874,9 +896,11 @@ void OptionsDialog::Connect(std::function<void()> onFinished) {
         return true;
     }))->Start();
 
+    std::wstring grantPath = L"https://accounts.google.com/o/oauth2/auth?client_id=" + clientID + L"&redirect_uri=http%3A%2F%2Flocalhost%3A35910%2F&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.readonly+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile";
+
     ShellExecuteA(Plugin::instance()->GetMainWindowHandle(),
                   "open",
-                  "https://accounts.google.com/o/oauth2/auth?client_id=" CLIENT_ID "&redirect_uri=http%3A%2F%2Flocalhost%3A35910%2F&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.readonly+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile",
+                  std::string(grantPath.begin(), grantPath.end()).c_str(),
                   NULL, NULL, SW_SHOWNORMAL);
 }
 

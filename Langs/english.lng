@@ -32,6 +32,7 @@ PlaylistName=Playlist name (optional)
 Title=YouTube
 Account=YouTube account
 ConnectButton=Sign in with Google|Sign out
+DeveloperAccountButton=Developer
 General=General
 MonitorURLs=Monitor added URLs
 MonitorUserPlaylists=Monitor user's playlists
@@ -44,6 +45,19 @@ YoutubeDLParameters=Parameters
 Log=Logging
 DontShowErrors=Don't show errors
 LogViewButton=View Logs
+
+[YouTube.YTAPI]
+Title=Configure Developer Account
+Key=Key
+ClientID=Client ID
+ClientSecret=Client Secret
+HintNone=Using built-in credentials
+HintSetKey=Using Key
+HintSetAll=Using Key and Client
+HintMissingKey=Missing Key
+HintIncompleteOAuth=Missing ID or Secret
+OK=OK
+Cancel=Cancel
 
 [YouTube.Playlists]
 Favorites=Favorites

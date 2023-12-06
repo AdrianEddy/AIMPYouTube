@@ -84,6 +84,7 @@ public:
     void refreshAccessToken(bool synchrounous = false);
 
     inline bool isConnected() const { return !m_accessToken.empty(); }
+    inline bool useAccount() const { return Config::GetString(L"YouTubeKey", L"").empty() || !Config::GetString(L"YouTubeClientID", L"").empty(); }
 
     inline IAIMPCore *core() const { return m_core; }
 

@@ -109,6 +109,7 @@
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Tools.h" />
     <ClInclude Include="YouTubeDL.h" />
+    <ClInclude Include="YTAPIDialog.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AddURLDialog.cpp" />
@@ -138,6 +139,7 @@
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Tools.cpp" />
     <ClCompile Include="YouTubeDL.cpp" />
+    <ClCompile Include="YTAPIDialog.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AIMPYouTube.def" />

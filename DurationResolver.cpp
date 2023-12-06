@@ -49,10 +49,11 @@ void DurationResolver::Resolve() {
     if (allIds.size() > 1) {
         allIds.resize(allIds.size() - 1); // Remove trailing comma
 
-        std::wstring reqUrl(L"https://www.googleapis.com/youtube/v3/videos?part=contentDetails&hl=" + Plugin::instance()->Lang(L"YouTube\\YouTubeLang") + L"&id=" + allIds);
-        reqUrl += L"&key=" TEXT(APP_KEY);
-        if (Plugin::instance()->isConnected())
-            reqUrl += L"\r\nAuthorization: Bearer " + Plugin::instance()->getAccessToken();
+        Plugin* plugin = Plugin::instance();
+        std::wstring reqUrl(L"https://www.googleapis.com/youtube/v3/videos?part=contentDetails&hl=" + plugin->Lang(L"YouTube\\YouTubeLang") + L"&id=" + allIds);
+        reqUrl += L"&key=" + Config::GetString(L"YouTubeKey", TEXT(APP_KEY));
+        if (plugin->isConnected() && plugin->useAccount())
+            reqUrl += L"\r\nAuthorization: Bearer " + plugin->getAccessToken();
 
         AimpHTTP::Get(reqUrl, [map](unsigned char *data, int size) {
             rapidjson::Document d;
