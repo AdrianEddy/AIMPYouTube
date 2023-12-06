@@ -235,10 +235,11 @@ void OptionsDialog::LoadProfileInfo(std::function<void()> onFinished) {
         if (d.IsObject() && d.HasMember("items") && d["items"].IsArray() && d["items"].Size() > 0 && d["items"][0].HasMember("contentDetails")) {
             const rapidjson::Value &i = d["items"][0]["contentDetails"]["relatedPlaylists"];
 
-            m_userPlaylists.push_back({ Tools::ToWString(i["favorites"]), Plugin::instance()->Lang(L"YouTube.Playlists\\Favorites"), true, L"Favorites" });
-            m_userPlaylists.push_back({ Tools::ToWString(i["uploads"]), Plugin::instance()->Lang(L"YouTube.Playlists\\Uploads"), false, L"Uploads" });
-            m_userPlaylists.push_back({ Tools::ToWString(i["likes"]), Plugin::instance()->Lang(L"YouTube.Playlists\\Likes"), true, L"Likes" });
-            m_userPlaylists.push_back({ Tools::ToWString(i["watchLater"]), Plugin::instance()->Lang(L"YouTube.Playlists\\WatchLater"), true, L"WatchLater" });
+            // YouTube seems to no longer provide favorites or watchLater
+            if (i.HasMember("favorites")) m_userPlaylists.push_back({ Tools::ToWString(i["favorites"]), Plugin::instance()->Lang(L"YouTube.Playlists\\Favorites"), true, L"Favorites" });
+            if (i.HasMember("uploads")) m_userPlaylists.push_back({ Tools::ToWString(i["uploads"]), Plugin::instance()->Lang(L"YouTube.Playlists\\Uploads"), false, L"Uploads" });
+            m_userPlaylists.push_back({ i.HasMember("likes") ? Tools::ToWString(i["likes"]) : L"LL", Plugin::instance()->Lang(L"YouTube.Playlists\\Likes"), true, L"Likes"});
+            m_userPlaylists.push_back({ i.HasMember("watchLater") ? Tools::ToWString(i["watchLater"]) : L"WL", Plugin::instance()->Lang(L"YouTube.Playlists\\WatchLater"), true, L"WatchLater"});
 
             m_userYTName = Tools::ToWString(d["items"][0]["snippet"]["title"]);
         }
