@@ -213,10 +213,11 @@ void Config::LoadCache() {
 }
 
 bool Config::ResolveTrackInfo(const std::wstring &id) {
-    std::wstring url(L"https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&hl=" + Plugin::instance()->Lang(L"YouTube\\YouTubeLang") + L"&id=" + id);
-    url += L"&key=" TEXT(APP_KEY);
-    if (Plugin::instance()->isConnected())
-        url += L"\r\nAuthorization: Bearer " + Plugin::instance()->getAccessToken();
+    Plugin* plugin = Plugin::instance();
+    std::wstring url(L"https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&hl=" + plugin->Lang(L"YouTube\\YouTubeLang") + L"&id=" + id);
+    url += L"&key=" + Config::GetString(L"YouTubeKey", TEXT(APP_KEY));
+    if (plugin->isConnected() && plugin->useAccount())
+        url += L"\r\nAuthorization: Bearer " + plugin->getAccessToken();
 
     bool result = false;
     std::wstring title, artwork;

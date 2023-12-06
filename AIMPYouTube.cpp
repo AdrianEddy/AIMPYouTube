@@ -185,7 +185,7 @@ void Plugin::MonitorCallback() {
         for (const auto &x : Config::MonitorUrls) {
             m_instance->m_monitorPendingUrls.push(x);
         }
-        if (m_instance->isConnected()) {
+        if (m_instance->isConnected() && m_instance->useAccount()) {
             std::wstring auth = L"\r\nAuthorization: Bearer " + m_instance->m_accessToken;
 
             // Load user playlists

@@ -138,15 +138,16 @@ void YouTubeAPI::LoadFromUrl(std::wstring url, IAIMPPlaylist *playlist, std::sha
     if (!playlist || !state)
         return;
 
+    Plugin* plugin = Plugin::instance();
     std::wstring reqUrl(url);
     if (reqUrl.find(L'?') == std::wstring::npos) {
         reqUrl += L'?';
     } else {
         reqUrl += L'&';
     }
-    reqUrl += L"key=" TEXT(APP_KEY);
-    if (Plugin::instance()->isConnected())
-        reqUrl += L"\r\nAuthorization: Bearer " + Plugin::instance()->getAccessToken();
+    reqUrl += L"key=" + Config::GetString(L"YouTubeKey", TEXT(APP_KEY));
+    if (plugin->isConnected() && plugin->useAccount())
+        reqUrl += L"\r\nAuthorization: Bearer " + plugin->getAccessToken();
 
     AimpHTTP::Get(reqUrl, [playlist, state, finishCallback, url](unsigned char *data, int size) {
         rapidjson::Document d;
@@ -369,7 +370,7 @@ void YouTubeAPI::ResolveUrl(const std::wstring &url, const std::wstring &playlis
             plProp->Release();
         }
         if (!ytPlaylistId.empty()) {
-            AimpHTTP::Get(L"https://www.googleapis.com/youtube/v3/playlists?part=snippet&hl=" + Plugin::instance()->Lang(L"YouTube\\YouTubeLang") + L"&id=" + ytPlaylistId + L"&key=" TEXT(APP_KEY), [pl](unsigned char *data, int size) {
+            AimpHTTP::Get(L"https://www.googleapis.com/youtube/v3/playlists?part=snippet&hl=" + Plugin::instance()->Lang(L"YouTube\\YouTubeLang") + L"&id=" + ytPlaylistId + L"&key=" + Config::GetString(L"YouTubeKey", TEXT(APP_KEY)), [pl](unsigned char *data, int size) {
                 rapidjson::Document d;
                 d.Parse(reinterpret_cast<const char *>(data));
                 if (d.IsObject() && d.HasMember("items") && d["items"].IsArray() && d["items"].Size() > 0 && d["items"][0].HasMember("snippet")) {
