@@ -16,6 +16,7 @@ BOOL CALLBACK YTAPIDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lP
             EndDialog(hwnd, IDCANCEL);
             break;
         case WM_INITDIALOG: {
+            dialog = (OptionsDialog*)lParam;
             std::wstring key =          Config::GetString(L"YouTubeKey", L"");
             std::wstring clientID =     Config::GetString(L"YouTubeClientID", L"");
             std::wstring clientSecret = Config::GetString(L"YouTubeClientSecret", L"");
@@ -45,9 +46,22 @@ BOOL CALLBACK YTAPIDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lP
                     GetDlgItemText(hwnd, IDC_YTAPICLIENTSECRET, buf, 1024);
                     std::wstring clientSecret(buf);
 
-                    Config::SetString(L"YouTubeKey",          key);
-                    Config::SetString(L"YouTubeClientID",     clientID);
-                    Config::SetString(L"YouTubeClientSecret", clientSecret);
+                    std::wstring oldClientID = Config::GetString(L"YouTubeClientID", L"");
+
+                    if (key.empty()) {
+                        Config::Delete(L"YouTubeKey");
+                    } else {
+                        Config::SetString(L"YouTubeKey", key);
+                    }
+
+                    if (clientID.empty()) {
+                        Config::Delete(L"YouTubeClientID");
+                        Config::Delete(L"YouTubeClientSecret");
+                    } else {
+                        Config::SetString(L"YouTubeClientID",     clientID);
+                        Config::SetString(L"YouTubeClientSecret", clientSecret);
+                    }
+
                     EndDialog(hwnd, wParam);
                 } break;
                 case IDCANCEL:
@@ -76,15 +90,24 @@ BOOL CALLBACK YTAPIDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lP
 }
 
 void YTAPIDialog::UpdateHint(HWND hwnd, std::wstring &key, std::wstring &clientID, std::wstring &clientSecret) {
+    // Only a key or key and client ID and secret are required
     std::wstring langKey;
     bool isValid = true;
-    if (key.empty() && clientID.empty() && clientSecret.empty()) {
+    bool keySet = !key.empty();
+    bool clientIDSet = !clientID.empty();
+    bool clientSecretSet = !clientSecret.empty();
+    if (!keySet && !clientIDSet && !clientSecretSet) {
         langKey = L"YouTube.YTAPI\\HintNone";
-    } else if (!key.empty() && !clientID.empty() && !clientSecret.empty()) {
-        langKey = L"YouTube.YTAPI\\HintSet";
-    } else {
-        langKey = L"YouTube.YTAPI\\HintMissing";
+    } else if ((clientIDSet || clientSecretSet) && !keySet) {
+        langKey = L"YouTube.YTAPI\\HintMissingKey";
         isValid = false;
+    } else if ((clientIDSet || clientSecretSet) && (!clientIDSet || !clientSecretSet)) {
+        langKey = L"YouTube.YTAPI\\HintIncompleteOAuth";
+        isValid = false;
+    } else if (!clientIDSet && !clientSecretSet && keySet) {
+        langKey = L"YouTube.YTAPI\\HintSetKey";
+    } else {
+        langKey = L"YouTube.YTAPI\\HintSetAll";
     }
     SetDlgItemText(hwnd, IDC_YTAPIUSAGE, Plugin::instance()->Lang(langKey).c_str());
     EnableWindow(GetDlgItem(hwnd, IDOK), isValid);

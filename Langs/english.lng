@@ -51,9 +51,11 @@ Title=Configure Developer Account
 Key=Key
 ClientID=Client ID
 ClientSecret=Client Secret
-HintNone=Using built-in account
-HintSet=Using custom account
-HintMissing=Missing fields
+HintNone=Using built-in credentials
+HintSetKey=Using Key
+HintSetAll=Using Key and Client
+HintMissingKey=Missing Key
+HintIncompleteOAuth=Missing ID or Secret
 OK=OK
 Cancel=Cancel
 
