@@ -642,7 +642,10 @@ void Plugin::refreshAccessToken(bool synchrounous) {
     if (m_refreshToken.empty())
         return;
 
-    std::string post("client_id=" CLIENT_ID "&client_secret=" CLIENT_SECRET "&grant_type=refresh_token&refresh_token=" + Tools::ToString(m_refreshToken));
+    std::wstring clientID = Config::GetString(L"YouTubeClientID", TEXT(CLIENT_ID));
+    std::wstring clientSecret = Config::GetString(L"YouTubeClientSecret", TEXT(CLIENT_SECRET));
+
+    std::string post("client_id=" + std::string(clientID.begin(), clientID.end()) + "&client_secret=" + std::string(clientSecret.begin(), clientSecret.end()) + "&grant_type=refresh_token&refresh_token=" + Tools::ToString(m_refreshToken));
 
     AimpHTTP::Post(L"https://accounts.google.com/o/oauth2/token", post, [this](unsigned char *data, unsigned int size) {
         rapidjson::Document d;

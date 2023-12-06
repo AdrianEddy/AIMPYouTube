@@ -842,8 +842,11 @@ void OptionsDialog::Connect(std::function<void()> onFinished) {
                 s2 = Tools::ToString(Plugin::instance()->Lang(L"YouTube\\ConnectStatusOK", 1)),
                 s3 = Tools::ToString(Plugin::instance()->Lang(L"YouTube\\ConnectStatusError", 0)),
                 s4 = Tools::ToString(Plugin::instance()->Lang(L"YouTube\\ConnectStatusError", 1));
+    // The different thread also lacks config values
+    std::wstring clientID =     Config::GetString(L"YouTubeClientID", TEXT(CLIENT_ID));
+    std::wstring clientSecret = Config::GetString(L"YouTubeClientSecret", TEXT(CLIENT_SECRET));
 
-    (new TcpServer(35910, [onFinished, s1, s2, s3, s4](TcpServer *s, char *request, std::string &response) -> bool {
+    (new TcpServer(35910, [onFinished, s1, s2, s3, s4, clientID, clientSecret](TcpServer *s, char *request, std::string &response) -> bool {
         response = "HTTP/1.1 200 OK\r\n"
                    "Content-Type: text/html\r\n"
                    "Connection: close\r\n"
@@ -868,7 +871,7 @@ void OptionsDialog::Connect(std::function<void()> onFinished) {
 
             DebugA("Access code: %s\n", token);
 
-            std::string postData = "client_id=" CLIENT_ID "&client_secret=" CLIENT_SECRET "&grant_type=authorization_code&redirect_uri=http%3A%2F%2Flocalhost%3A35910%2F&code=";
+            std::string postData = "client_id=" + std::string(clientID.begin(), clientID.end()) + "&client_secret=" + std::string(clientSecret.begin(), clientSecret.end()) + "&grant_type=authorization_code&redirect_uri=http%3A%2F%2Flocalhost%3A35910%2F&code=";
             postData += token;
 
             AimpHTTP::Post(L"https://accounts.google.com/o/oauth2/token", postData, [onFinished](unsigned char *data, int size) {
@@ -892,9 +895,11 @@ void OptionsDialog::Connect(std::function<void()> onFinished) {
         return true;
     }))->Start();
 
+    std::wstring grantPath = L"https://accounts.google.com/o/oauth2/auth?client_id=" + clientID + L"&redirect_uri=http%3A%2F%2Flocalhost%3A35910%2F&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.readonly+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile";
+
     ShellExecuteA(Plugin::instance()->GetMainWindowHandle(),
                   "open",
-                  "https://accounts.google.com/o/oauth2/auth?client_id=" CLIENT_ID "&redirect_uri=http%3A%2F%2Flocalhost%3A35910%2F&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.readonly+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile",
+                  std::string(grantPath.begin(), grantPath.end()).c_str(),
                   NULL, NULL, SW_SHOWNORMAL);
 }
 
