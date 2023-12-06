@@ -1,11 +1,13 @@
 #pragma once
 
+#include "OptionsDialog.h"
+
 #include <windows.h>
 #include <string>
 
 class YTAPIDialog {
 public:
-    static void Show();
+    static void Show(OptionsDialog* dialog);
 
 private:
     YTAPIDialog();

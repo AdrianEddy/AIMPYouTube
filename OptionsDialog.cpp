@@ -293,6 +293,21 @@ void OptionsDialog::UpdateProfileInfo() {
     RedrawWindow(m_handle, &rc, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_ALLCHILDREN);
 }
 
+void OptionsDialog::LogoutProfile() {
+    m_plugin->setAccessToken(L"", L"", 0);
+    m_userName.clear();
+    m_userInfo.clear();
+    m_userId.clear();
+    m_userYTName.clear();
+    m_userPlaylists.clear();
+    Config::UserPlaylists.clear();
+    std::wstring path = Config::PluginConfigFolder() + L"user_avatar.jpg";
+    DeleteFile(path.c_str());
+
+    OptionsModified();
+    UpdateProfileInfo();
+}
+
 void GetRoundRectPath(Gdiplus::GraphicsPath *pPath, Gdiplus::Rect r, int dia) {
     if (dia > r.Width)  dia = r.Width;
     if (dia > r.Height) dia = r.Height;
@@ -768,18 +783,7 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
                             dialog->LoadProfileInfo();
                         });
                     } else {
-                        plugin->setAccessToken(L"", L"", 0);
-                        dialog->m_userName.clear();
-                        dialog->m_userInfo.clear();
-                        dialog->m_userId.clear();
-                        dialog->m_userYTName.clear();
-                        dialog->m_userPlaylists.clear();
-                        Config::UserPlaylists.clear();
-                        std::wstring path = Config::PluginConfigFolder() + L"user_avatar.jpg";
-                        DeleteFile(path.c_str());
-
-                        dialog->OptionsModified();
-                        dialog->UpdateProfileInfo();
+                        dialog->LogoutProfile();
                     }
                 break;
                 case IDC_YTDLPARAMS:
@@ -808,7 +812,7 @@ BOOL CALLBACK OptionsDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM 
                 break;
                 case IDC_OPENYTAPI:
                     if (HIWORD(wParam) == BN_CLICKED) {
-                        YTAPIDialog::Show();
+                        YTAPIDialog::Show(dialog);
                     }
                 break;
                 case IDC_YTDLUPDATE:

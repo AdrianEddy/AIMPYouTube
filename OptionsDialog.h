@@ -45,6 +45,7 @@ public:
 
     void LoadProfileInfo(std::function<void()> onFinished = nullptr);
     void UpdateProfileInfo();
+    void LogoutProfile();
 
     void OptionsModified();
 

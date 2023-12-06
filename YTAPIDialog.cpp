@@ -4,13 +4,15 @@
 
 extern HINSTANCE g_hInst;
 
-void YTAPIDialog::Show() {
+void YTAPIDialog::Show(OptionsDialog *dialog) {
     HWND parent = Plugin::instance()->GetMainWindowHandle();
 
-    DialogBox(g_hInst, MAKEINTRESOURCE(IDD_YTAPISETTINGS), parent, DlgProc);
+    DialogBoxParamW(g_hInst, MAKEINTRESOURCE(IDD_YTAPISETTINGS), parent, DlgProc, (LPARAM)dialog);
 }
 
 BOOL CALLBACK YTAPIDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
+    static OptionsDialog* dialog = nullptr;
+
     switch (Msg) {
         case WM_CLOSE:
             EndDialog(hwnd, IDCANCEL);
@@ -62,6 +64,10 @@ BOOL CALLBACK YTAPIDialog::DlgProc(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM lP
                         Config::SetString(L"YouTubeClientSecret", clientSecret);
                     }
 
+                    if (clientID != oldClientID) {
+                        dialog->LogoutProfile();
+                    }
+                    
                     EndDialog(hwnd, wParam);
                 } break;
                 case IDCANCEL:
