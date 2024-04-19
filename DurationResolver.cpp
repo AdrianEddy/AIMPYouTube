@@ -6,6 +6,7 @@
 #include <cmath>
 #include <unordered_map>
 #include <memory>
+#include <vector>
 
 std::vector<DurationResolver::Item> DurationResolver::m_items;
 

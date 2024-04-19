@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <string>
 
 class TcpServer {
     typedef std::function<bool(TcpServer *, char *, std::string &)> RequestFunc;

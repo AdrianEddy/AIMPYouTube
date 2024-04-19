@@ -4,6 +4,7 @@
 #include "SDK/apiMenu.h"
 #include "IUnknownInterfaceImpl.h"
 #include <functional>
+#include <string>
 
 class AimpMenu {
     typedef std::function<void(IAIMPMenuItem *)> CallbackFunc;

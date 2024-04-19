@@ -19,7 +19,7 @@ std::wstring YouTubeDL::GetPath() {
 
         if (GetModuleFileName(reinterpret_cast<HINSTANCE>(&__ImageBase), path, MAX_PATH)) {
             _wsplitpath_s(path, drive, dir, file, ext);
-            _wmakepath_s (path, drive, dir, L"youtube-dl", L"exe");
+            _wmakepath_s (path, drive, dir, L"yt-dlp", L"exe");
             youtube_dl = path;
         } else {
             Tools::ShowLastError(L"YouTubeDL::GetPath(): GetModuleFileName");

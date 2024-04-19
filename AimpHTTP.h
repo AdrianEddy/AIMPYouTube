@@ -4,6 +4,7 @@
 #include "IUnknownInterfaceImpl.h"
 #include <functional>
 #include <set>
+#include <string>
 
 class AimpHTTP {
     typedef std::function<void(unsigned char *, int)> CallbackFunc;

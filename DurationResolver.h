@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 #include "SDK/apiPlaylists.h"
 #include "SDK/apiFileManager.h"
 
